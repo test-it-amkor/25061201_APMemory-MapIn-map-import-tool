@@ -1,7 +1,7 @@
 import os, re
 import xml.etree.ElementTree as ET
 from datetime import datetime
-from modules.config import get_export_path, get_sinf_dl_path
+from modules.cfg import get_export_path, get_sinf_dl_path
 
 class Map:
   """
@@ -275,10 +275,7 @@ def export_xml(lot_id, target_device, die_size_x, die_size_y):
     maps_el = ET.Element("Maps")
 
     #遍歷 SINF map 的下載資料夾
-    #正式用
-    # dl = get_sinf_dl_path(lot_id, f"APC_{lot_id}", env="prod")
-    #測試用
-    dl_path = get_sinf_dl_path(lot_id, f"APC_{lot_id}", env="dev")
+    dl_path = get_sinf_dl_path(lot_id, f"APC_{lot_id}")
 
     for file in os.listdir(dl_path):
       #取得單片 SINF map 檔案資訊

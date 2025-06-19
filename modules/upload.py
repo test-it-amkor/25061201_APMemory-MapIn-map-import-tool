@@ -1,5 +1,5 @@
 import os
-from modules.config import get_export_path, get_upload_path
+from modules.cfg import get_export_path, get_upload_path
 from modules.xml import remove_existing_xml
 
 def upload_xml(lot_id: str) -> str | None:

@@ -1,7 +1,7 @@
 import os, shutil
 import pandas as pd
 from datetime import datetime
-from modules.config import get_wo_dl_path, get_wo_target_path
+from modules.cfg import get_wo_dl_path, get_wo_target_path
 
 def getLatestMonths(num=2) -> list:
   """
@@ -55,10 +55,7 @@ def download_wo_file(lot_id: str) -> str:
 
     for month in monthStrs:
       #1. 組裝下載資料夾路徑
-      #正式用
-      # dl_path = get_wo_dl_path(lot_id, "prod")
-      #測試用
-      dl_path = get_wo_dl_path(lot_id, "dev")
+      dl_path = get_wo_dl_path(lot_id)
       os.makedirs(dl_path, exist_ok=True)
 
       #2. 取得要遍歷的資料夾路徑

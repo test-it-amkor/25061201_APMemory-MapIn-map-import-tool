@@ -1,7 +1,7 @@
 import os, re
 import paramiko
 from stat import S_ISREG
-from modules.config import get_sftp_config, get_sinf_dl_path, get_sinf_target_path
+from modules.cfg import get_sftp_cfg, get_sinf_dl_path, get_sinf_target_path
 
 class SftpConnection:
   def __init__(self, host: str, port: int, user: str, pwd: str):
@@ -45,7 +45,7 @@ def download_sinf_map(lot_id: str) -> str:
 
   try:
     #1. 建立 SFTP 連線
-    sftp_cfg = get_sftp_config()
+    sftp_cfg = get_sftp_cfg()
     sftp_addr = sftp_cfg["host"]
     sftp_port = sftp_cfg["port"]
     sftp_user = sftp_cfg["user"]
@@ -55,10 +55,7 @@ def download_sinf_map(lot_id: str) -> str:
 
     #2. 組裝下載資料夾路徑, 並建立資料夾 APC_{lot_id}
     folder_name = f"APC_{lot_id}"
-    #正式用
-    # dl_path = get_sinf_dl_path(lot_id, folder_name, env="prod")
-    #測試用
-    dl_path = get_sinf_dl_path(lot_id, folder_name, env="dev")
+    dl_path = get_sinf_dl_path(lot_id, folder_name)
     os.makedirs(dl_path, exist_ok=True)
 
     #3. 列出遠端資料夾下的目標檔案
