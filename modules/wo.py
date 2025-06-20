@@ -2,6 +2,7 @@ import os, shutil
 import pandas as pd
 from datetime import datetime
 from modules.cfg import get_wo_dl_path, get_wo_target_path
+from modules.log import write_log
 
 def getLatestMonths(num=2) -> list:
   """
@@ -76,7 +77,7 @@ def download_wo_file(lot_id: str) -> str:
         try:
           df = pd.read_csv(csv_path)
         except Exception as e:
-          print(f"Read CSV file {csv_f} failed: {e}")
+          write_log(f"Read CSV file {csv_f} failed: {e}", "error")
           return "WoReadError"
         #檢查 LOT NO 欄位是否存在, 不存在則跳過
         if "LOT NO" not in df.columns:
@@ -88,14 +89,14 @@ def download_wo_file(lot_id: str) -> str:
         #找到符合的 csv, 將其下載複製到 dl_path
         download_full_path = os.path.join(dl_path, csv_f)
         shutil.copy2(csv_path, download_full_path)
-        print(f"Downloaded WO file: {download_full_path}")
+        write_log(f"Downloaded WO file: {download_full_path}", "info")
         return download_full_path
       #若此月份資料夾沒找到符合的 WO file, 繼續往前一個月檢查
     #若所有月份資料夾都沒找到
     return "WoNotFoundError"
 
   except Exception as e:
-    print(f"Download WO failed: {e}")
+    write_log(f"Download WO failed: {e}", "error")
 
 
 def get_wo_info(wo_path: str) -> dict | str:
@@ -115,7 +116,7 @@ def get_wo_info(wo_path: str) -> dict | str:
   try:
     df = pd.read_csv(wo_path)
   except Exception as e:
-    print(f"Read CSV file {wo_path} failed: {e}")
+    write_log(f"Read CSV file {wo_path} failed: {e}", "error")
     return "WoReadError"
 
   #取得 OUTPUT P/N、MASK、SUFFIX 欄位的值
@@ -128,10 +129,14 @@ def get_wo_info(wo_path: str) -> dict | str:
       mask = str(row.get("MASK", "")).strip()
       suffix = str(row.get("SUFFIX", "")).strip()
       if not output_p_n or not mask or not suffix:
-        raise ValueError("OUTPUT P/N, MASK, or SUFFIX is empty")
+        ve = ValueError("OUTPUT P/N, MASK, or SUFFIX is empty")
+        write_log(ve, "error")
+        raise ve
       target_device = f"{output_p_n}{mask}{suffix}"
     except Exception:
-      raise ValueError("Failed to parse OUTPUT P/N, MASK, or SUFFIX")
+      ve = ValueError("Failed to parse OUTPUT P/N, MASK, or SUFFIX")
+      write_log(ve, "error")
+      raise ValueError(ve)
 
     quantity = row.get("QUANTITY", 0)
     try:
@@ -141,5 +146,5 @@ def get_wo_info(wo_path: str) -> dict | str:
 
     return {"targetDevice": target_device, "quantity": quantity}
   except Exception as e:
-    print(f"Parse WO file info failed, file path: {wo_path}, error: {e}")
+    write_log(f"Parse WO file info failed, file path: {wo_path}, error: {e}", "error")
     return "WoReadError"

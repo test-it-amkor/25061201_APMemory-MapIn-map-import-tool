@@ -1,9 +1,13 @@
-import json
+import os, json
 
 
 def load_cfg():
-  with open("cfg.json") as f:
-    return json.load(f)
+  cfg_filename = "cfg.json"
+  if os.path.exists(cfg_filename) and os.path.isfile(cfg_filename):
+    with open(cfg_filename) as f:
+      return json.load(f)
+  else:
+    print(f"Oops! {cfg_filename} not found")
 
 cfg = load_cfg()
 
@@ -19,7 +23,7 @@ def get_log_path() -> str:
   """
   取得 log directory path
   """
-  return r"cfg['log_path']".strip()
+  return rf"{cfg['log_path']}".strip()
 
 
 def get_sftp_cfg() -> dict:
@@ -66,14 +70,14 @@ def get_sinf_target_path() -> str:
   """
   取得下載 SINF map file 的遠端目標路徑
   """
-  return r"cfg['sinf_target_path']".strip()
+  return rf"{cfg['sinf_target_path']}".strip()
 
 
 def get_wo_target_path() -> str:
   """
   取得下載 WO file 的遠端目標路徑
   """
-  return r"cfg['wo_target_path']".strip()
+  return rf"{cfg['wo_target_path']}".strip()
 
 
 def get_export_path(lot_id: str) -> str:
@@ -90,4 +94,4 @@ def get_upload_path() -> str:
   """
   取得上傳檔案的路徑 (AWMS)
   """
-  return r"cfg['upload_path']".strip()
+  return rf"{cfg['upload_path']}".strip()

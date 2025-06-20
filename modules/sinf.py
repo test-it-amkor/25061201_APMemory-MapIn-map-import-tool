@@ -2,6 +2,7 @@ import os, re
 import paramiko
 from stat import S_ISREG
 from modules.cfg import get_sftp_cfg, get_sinf_dl_path, get_sinf_target_path
+from modules.log import write_log
 
 class SftpConnection:
   def __init__(self, host: str, port: int, user: str, pwd: str):
@@ -16,9 +17,9 @@ class SftpConnection:
       self.transport = paramiko.Transport((self.host, self.port))
       self.transport.connect(username=self.username, password=self.password)
       self.sftp = paramiko.SFTPClient.from_transport(self.transport)
-      print("SFTP connection established")
+      write_log("SFTP connection established", "success")
     except Exception as e:
-      print(f"Failed to connect to SFTP server: {e}")
+      write_log(f"Failed to connect to SFTP server: {e}", "error")
       return "ConnectionError"
 
   def close(self):
@@ -85,28 +86,28 @@ def download_sinf_map(lot_id: str) -> str:
           local_file = os.path.join(dl_path, file_attr.filename)
           sftp.get(remote_file, local_file)
           downloaded_files.append(file_attr.filename)
-          print(f"Downloaded SINF file: {file_attr.filename}")
+          write_log(f"Downloaded SINF file: {file_attr.filename}", "info")
 
       #檢查下載的檔案數量是否與 SFTP 上的檔案數量一致
       if len(downloaded_files) == len(valid_files):
-        print("All files downloaded successfully")
+        write_log("All files downloaded successfully", "success")
         break
       else:
         download_attempts += 1
-        print(f"Downloaded {len(downloaded_files)} files, expected {len(valid_files)}. Retrying... (Attempt {download_attempts})")
+        write_log(f"Downloaded {len(downloaded_files)} files, expected {len(valid_files)}. Retrying... (Attempt {download_attempts})", "warning")
 
     #6-1. 如果嘗試下載超過 3 次仍未成功, 拋出異常
     if download_attempts == 3:
       return "DownloadTooManyTimes"
 
     #6-2. 如果下載成功, 回傳 None 並關閉 SFTP 連線
-    print("Download SINF map file completed successfully")
+    write_log("Download SINF map file completed successfully", "success")
     #關閉 SFTP 連線
     sftp.close()
     return dl_path
 
   except Exception as e:
-    print(f"Download SINF failed: {e}")
+    write_log(f"Download SINF failed: {e}", "error")
     return "SinfDownloadError"
 
 
@@ -158,5 +159,5 @@ def get_sinf_info(sinf_path: str) -> dict | str:
       raise f"Die size X or Y not found in SINF file: {sinf_file}"
 
   except Exception as e:
-    print(f"Read SINF file failed: {e}")
+    write_log(f"Read SINF file failed: {e}", "error")
     return "SinfReadError"

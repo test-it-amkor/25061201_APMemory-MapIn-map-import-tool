@@ -25,25 +25,26 @@ class MyWidget(QWidget):
 
   def ui_setup(self):
     self.form_layout = QFormLayout()
-    #進度條
-    self.progress_bar = QProgressBar(self)
-    self.progress_bar.setValue(0)
-    self.progress_bar.setMaximum(100)
-    self.form_layout.addRow(self.progress_bar)
     #Lot ID 單行輸入框
     self.lot_id = QLineEdit(self)
     self.form_layout.addRow("Lot ID", self.lot_id)
     #Execute 按鈕
     self.exec_btn = QPushButton("Execute", self)
-    self.form_layout.addRow(self.exec_btn)
     self.exec_btn.clicked.connect(self.on_execute)
+    self.form_layout.addRow(self.exec_btn)
     #Exit 按鈕
     self.exit_btn = QPushButton("Exit", self)
-    self.form_layout.addRow(self.exit_btn)
     self.exit_btn.clicked.connect(self.close)
+    self.form_layout.addRow(self.exit_btn)
+    #進度條
+    self.progress_bar = QProgressBar(self)
+    self.progress_bar.setValue(0)
+    self.progress_bar.setMaximum(100)
+    self.progress_bar.setVisible(False)  #初始隱藏進度條
+    self.form_layout.addRow(self.progress_bar)
 
     #設置 main layout
-    self.setLayout(self.formLayout)
+    self.setLayout(self.form_layout)
 
   def get_error_msg(key: str, custom_info=None) -> str:
     """
@@ -56,7 +57,6 @@ class MyWidget(QWidget):
     Returns:
       str: 對應的 error message 內容, 如果沒有對應的 key, 則回傳 "Unknown error occurred"
     """
-
     error_messages = {
       "ConnectionError": "Failed to connect to SFTP server",
       "SinfNotFoundError": f"Lot ID {custom_info} SINF map not found from FTP",
@@ -133,6 +133,8 @@ class MyWidget(QWidget):
     9. 如果成功, 印出相關資訊, 並使用 QMessageBox 顯示成功訊息
     """
     try:
+      #顯示進度條
+      self.progress_bar.setVisible(True)
       #重置進度條進度為 0
       self.set_progress(0)
 

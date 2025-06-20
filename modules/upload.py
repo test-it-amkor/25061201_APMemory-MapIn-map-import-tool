@@ -1,5 +1,6 @@
 import os
 from modules.cfg import get_export_path, get_upload_path
+from modules.log import write_log
 from modules.xml import remove_existing_xml
 
 def upload_xml(lot_id: str) -> str | None:
@@ -17,16 +18,14 @@ def upload_xml(lot_id: str) -> str | None:
   try:
     #取得 AWMS 上傳路徑
     upload_path = get_upload_path()
+    #確保目標上傳資料夾存在
+    os.makedirs(upload_path, exist_ok=True)
 
     #XML 檔案的路徑
     xml_path = get_export_path(lot_id)
-
     #檢查 XML 檔案是否存在
     if not os.path.exists(xml_path) or not os.path.isfile(xml_path):
       return "XmlNotFoundError"
-
-    #確保目標上傳資料夾存在
-    os.makedirs(upload_path, exist_ok=True)
 
     #複製 XML 檔案到上傳資料夾路徑
     dst_path = os.path.join(upload_path, f"{lot_id}.xml")
@@ -35,10 +34,10 @@ def upload_xml(lot_id: str) -> str | None:
 
     #上傳完成後, 移除 XML 檔案
     remove_existing_xml(lot_id)
-    print(f"XML uploaded to: {dst_path}")
+    write_log(f"XML uploaded to: {dst_path}", "info")
     return None
 
   except Exception as e:
-    print(f"Error uploading XML for lot {lot_id}: {e}")
+    write_log(f"Error uploading XML for lot {lot_id}: {e}", "error")
     return "UploadError"
 

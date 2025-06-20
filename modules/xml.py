@@ -2,6 +2,7 @@ import os, re
 import xml.etree.ElementTree as ET
 from datetime import datetime
 from modules.cfg import get_export_path, get_sinf_dl_path
+from modules.log import write_log
 
 class Map:
   """
@@ -68,7 +69,7 @@ class Map:
       check_char_1 = chr(ord("A") + next_higher_three_bits)
       check_char_2 = chr(ord('0') + least_significant_three_bits)
       checksum = check_char_1 + check_char_2
-      print("checksum value is: ", checksum)
+      write_log(f"checksum value is: {checksum}", "info")
       return checksum
 
 
@@ -84,7 +85,7 @@ def remove_existing_xml(lot_id):
   if os.path.exists(xml_path) and os.path.isfile(xml_path):
     try:
       os.remove(xml_path)
-      print(f"Removed existing XML file: {xml_path}")
+      write_log(f"Removed existing XML file: {xml_path}", "info")
     except Exception:
       return "RemoveExportError"
 
@@ -132,7 +133,7 @@ def get_info_from_sinf(dl_path, lot_id, number) -> dict | str:
       }
 
   except Exception as e:
-    print(f"Error reading SINF map file: {lot_id}.{number}, error: {e}")
+    write_log(f"Error reading SINF map file: {lot_id}.{number}, error: {e}", "error")
     return "SinfReadError"
 
 
@@ -312,8 +313,8 @@ def export_xml(lot_id, target_device, die_size_x, die_size_y):
       #將 XML 內容寫入檔案
       tree = ET.ElementTree(maps_el)
       tree.write(xml_file, encoding="unicode")
-      print(f"Export to XML successfully, lot ID: {lot_id}")
+      write_log(f"Export to XML successfully, lot ID: {lot_id}", "success")
 
   except Exception as e:
-    print(f"Error exporting XML for lot {lot_id}: {e}")
+    write_log(f"Error exporting XML for lot {lot_id}: {e}", error)
     return "ExportXmlError"
