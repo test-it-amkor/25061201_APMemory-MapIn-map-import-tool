@@ -10,12 +10,14 @@ class SftpConnection:
     self.port = port
     self.user = user
     self.pwd = pwd
+    self.sftp = None
+    self.transport = None
 
   def connect(self):
     """建立 SFTP 連線"""
     try:
       self.transport = paramiko.Transport((self.host, self.port))
-      self.transport.connect(username=self.username, password=self.password)
+      self.transport.connect(username=self.user, password=self.pwd)
       self.sftp = paramiko.SFTPClient.from_transport(self.transport)
       write_log("SFTP connection established", "success")
     except Exception as e:
@@ -29,6 +31,27 @@ class SftpConnection:
     if self.transport:
       self.transport.close()
 
+  def listdir_attr(self, path):
+    """
+    取得遠端資料夾下的檔案列表
+
+    Arguments:
+      path (str): 遠端資料夾路徑
+
+    Returns:
+      list: 檔案列表
+    """
+    if self.sftp:
+      return self.sftp.listdir_attr(path)
+    else:
+      raise Exception("SFTP connection not established")
+
+  def get(self, remote_path, local_path):
+    """下載遠端檔案到本地"""
+    if self.sftp:
+      self.sftp.get(remote_path, local_path)
+    else:
+      raise Exception("SFTP connection not established")
 
 def download_sinf_map(lot_id: str) -> str:
   """
@@ -45,6 +68,8 @@ def download_sinf_map(lot_id: str) -> str:
   """
 
   try:
+    folder_name = f"APC_{lot_id}"
+
     #1. 建立 SFTP 連線
     sftp_cfg = get_sftp_cfg()
     sftp_addr = sftp_cfg["host"]
@@ -54,25 +79,25 @@ def download_sinf_map(lot_id: str) -> str:
     sftp = SftpConnection(sftp_addr, sftp_port, sftp_user, sftp_pwd)
     sftp.connect()
 
-    #2. 組裝下載資料夾路徑, 並建立資料夾 APC_{lot_id}
-    folder_name = f"APC_{lot_id}"
+    #2. 列出遠端資料夾下的目標檔案
+    try:
+      target_path = get_sinf_target_path()
+      remote_folder = os.path.join(target_path, folder_name)
+      file_attrs = sftp.listdir_attr(remote_folder)
+    except (IOError, FileNotFoundError, OSError) as e:
+      #如果 lot_id 對應的資料夾中沒有 SINF file, 回傳 SinfNotFoundError
+      write_log(f"Remote folder not found: {remote_folder}", "warning")
+      return "SinfNotFoundError"
+
+    #3. 只處理 {lot_id}.nn 的檔案 (例如 AADZHS000.01, AADZHS000.09)
+    valid_pattern = re.compile(rf"^{lot_id}\.\d{{2}}$")
+    valid_attrs = [f for f in file_attrs if valid_pattern.match(f.filename)]
+
+    #4: 組裝下載資料夾路徑, 並建立資料夾 APC_{lot_id}
     dl_path = get_sinf_dl_path(lot_id, folder_name)
     os.makedirs(dl_path, exist_ok=True)
 
-    #3. 列出遠端資料夾下的目標檔案
-    target_path = get_sinf_target_path()
-    remote_folder = os.path.join(target_path, folder_name)
-    files = sftp.listdir_attr(remote_folder)
-
-    #4. 只處理 {lot_id}.nn 的檔案 (例如 AADZHS000.01, AADZHS000.09)
-    valid_pattern = re.compile(rf"^{lot_id}\.\d{{2}}$")
-    valid_files = list(filter(valid_pattern.match, files))
-
-    #5-1. 如果 lot_id 對應的資料夾中沒有 SINF file, 回傳 SinfNotFoundError
-    if len(valid_files) == 0:
-      return "SinfNotFoundError"
-
-    #5-2. 開始下載
+    #5. 開始下載
     download_attempt = 0  #記錄嘗試下載次數
     downloaded_files = [] #記錄已下載的檔案
 
@@ -80,7 +105,7 @@ def download_sinf_map(lot_id: str) -> str:
     while download_attempt < 3:
       downloaded_files.clear()  #清空已下載檔案列表
 
-      for file_attr in valid_files:
+      for file_attr in valid_attrs:
         if S_ISREG(file_attr.st_mode):
           remote_file = os.path.join(remote_folder, file_attr.filename)
           local_file = os.path.join(dl_path, file_attr.filename)
@@ -89,15 +114,15 @@ def download_sinf_map(lot_id: str) -> str:
           write_log(f"Downloaded SINF file: {file_attr.filename}", "info")
 
       #檢查下載的檔案數量是否與 SFTP 上的檔案數量一致
-      if len(downloaded_files) == len(valid_files):
+      if len(downloaded_files) == len(valid_attrs):
         write_log("All files downloaded successfully", "success")
         break
       else:
-        download_attempts += 1
-        write_log(f"Downloaded {len(downloaded_files)} files, expected {len(valid_files)}. Retrying... (Attempt {download_attempts})", "warning")
+        download_attempt += 1
+        write_log(f"Downloaded {len(downloaded_files)} files, expected {len(valid_attrs)}. Retrying... (Attempt {download_attempt})", "warning")
 
     #6-1. 如果嘗試下載超過 3 次仍未成功, 拋出異常
-    if download_attempts == 3:
+    if download_attempt == 3:
       return "DownloadTooManyTimes"
 
     #6-2. 如果下載成功, 回傳 None 並關閉 SFTP 連線

@@ -26,7 +26,7 @@ def getLatestMonths(num=2) -> list:
 
   for _ in range(num):
     month_str = month_map[month]
-    result.append(f"WO{year}\{month_str}")
+    result.append(rf"WO{year}\{month_str}")
     #回推一個月
     month -= 1
     if month == 0:
@@ -66,7 +66,7 @@ def download_wo_file(lot_id: str) -> str:
       if not os.path.exists(folder_path):
         continue
       #找出所有 .csv 檔案, 如果沒有 .csv 檔案, 跳過此月份
-      csv_fs = [f for f in os.listdir(folder_path) if f.lower().endswith('.csv')]
+      csv_fs = [f for f in os.listdir(folder_path) if f.lower().endswith(".csv")]
       if not csv_fs:
         continue
 
@@ -75,7 +75,7 @@ def download_wo_file(lot_id: str) -> str:
         csv_path = os.path.join(folder_path, csv_f)
         #取得 dataframe
         try:
-          df = pd.read_csv(csv_path)
+          df = pd.read_csv(csv_path, sep="\t", on_bad_lines="skip")
         except Exception as e:
           write_log(f"Read CSV file {csv_f} failed: {e}", "error")
           return "WoReadError"
@@ -114,7 +114,7 @@ def get_wo_info(wo_path: str) -> dict | str:
   """
   #取得 dataframe
   try:
-    df = pd.read_csv(wo_path)
+    df = pd.read_csv(wo_path, sep="\t", on_bad_lines="skip")
   except Exception as e:
     write_log(f"Read CSV file {wo_path} failed: {e}", "error")
     return "WoReadError"

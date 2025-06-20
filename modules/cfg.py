@@ -39,7 +39,7 @@ def get_sftp_cfg() -> dict:
   """
   return {
     "host": cfg["sftp_host"].strip(),
-    "port": cfg["sftp_port"].strip(),
+    "port": cfg["sftp_port"],
     "user": cfg["sftp_user"].strip(),
     "pwd": cfg["sftp_pwd"].strip()
   }

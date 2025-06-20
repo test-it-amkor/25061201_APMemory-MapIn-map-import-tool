@@ -1,5 +1,6 @@
 import os, re
 import xml.etree.ElementTree as ET
+import xml.dom.minidom
 from datetime import datetime
 from modules.cfg import get_export_path, get_sinf_dl_path
 from modules.log import write_log
@@ -10,19 +11,19 @@ class Map:
   """
 
   def __init__(
-      self,
-      target_device: str,
-      die_size_x: int,
-      die_size_y: int,
-      row_infos: list,
-      wafer_id: str,
-      row_ct: str,
-      col_ct: str,
-      lot: str,
-      cnt_f: int,
-      cnt_1: int,
-      cnt_x: int
-    ):
+    self,
+    target_device: str,
+    die_size_x: float,
+    die_size_y: float,
+    row_infos: list,
+    wafer_id: str,
+    row_ct: str,
+    col_ct: str,
+    lot: str,
+    cnt_f: int,
+    cnt_1: int,
+    cnt_x: int
+  ):
     self.target_device = target_device
     self.die_size_x = die_size_x
     self.die_size_y = die_size_y
@@ -31,46 +32,46 @@ class Map:
     self.row_ct = row_ct
     self.col_ct = col_ct
     self.lot = lot
-    self.cnt_f = cnt_f
-    self.cnt_1 = cnt_1
-    self.cnt_x = cnt_x
+    self.cnt_f = str(cnt_f)
+    self.cnt_1 = str(cnt_1)
+    self.cnt_x = str(cnt_x)
     #此實例的 lot_no 與其他 lot_id 意義不同, 故命名為 let_no 作為區別
-    self.lot_no = get_lot_no()
-    self.substrate_id = get_substrate_id()
+    self.lot_no = self.get_lot_no()
+    self.substrate_id = self.get_substrate_id()
     self.curr_time = datetime.now().strftime("%Y%m%d%H%M%S%f")[:-4]
 
-    def get_lot_no(self):
-      """取得 lot_no"""
-      #將 wafer_id 轉換為字母, 例如 wafer_id 為 "01" 則轉換為 "A", "02" 則轉換為 "B"
-      wafer_letter = chr(ord("A") + int(self.wafer_id) - 1)
-      return f"{self.lot}{wafer_letter}"
+  def get_lot_no(self):
+    """取得 lot_no"""
+    #將 wafer_id 轉換為字母, 例如 wafer_id 為 "01" 則轉換為 "A", "02" 則轉換為 "B"
+    wafer_letter = chr(ord("A") + int(self.wafer_id) - 1)
+    return f"{self.lot}{wafer_letter}"
 
-    def get_substrate_id(self):
-      """取得 substrate_id"""
-      return f"{self.lot[:6]}-{self.wafer_id}-{get_checksum()}"
+  def get_substrate_id(self):
+    """取得 substrate_id"""
+    return f"{self.lot[:6]}-{self.wafer_id}-{self.get_checksum()}"
 
-    def get_checksum(self) -> str:
-      """計算 checksum"""
-      default_str = f"{self.lot[:6]}-{self.wafer_id}-A0"
+  def get_checksum(self) -> str:
+    """計算 checksum"""
+    default_str = f"{self.lot[:6]}-{self.wafer_id}-A0"
 
-      num = 0
-      for char in default_str:
-        num = (num * 8) % 59
-        num += ord(char)
-        num -= 32
-        if num > 59:
-          num -= 59
-      num = 59 - num
+    num = 0
+    for char in default_str:
+      num = (num * 8) % 59
+      num += ord(char)
+      num -= 32
+      if num > 59:
+        num -= 59
+    num = 59 - num
 
-      binary_num = format(num, "b").zfill(6)
-      least_significant_three_bits = int(binary_num[-3:], 2)
-      next_higher_three_bits = int(binary_num[-6:-3], 2) if len(binary_num) >= 6 else 0
+    binary_num = format(num, "b").zfill(6)
+    least_significant_three_bits = int(binary_num[-3:], 2)
+    next_higher_three_bits = int(binary_num[-6:-3], 2) if len(binary_num) >= 6 else 0
 
-      check_char_1 = chr(ord("A") + next_higher_three_bits)
-      check_char_2 = chr(ord('0') + least_significant_three_bits)
-      checksum = check_char_1 + check_char_2
-      write_log(f"checksum value is: {checksum}", "info")
-      return checksum
+    check_char_1 = chr(ord("A") + next_higher_three_bits)
+    check_char_2 = chr(ord("0") + least_significant_three_bits)
+    checksum = check_char_1 + check_char_2
+    write_log(f"Wafer ID {self.wafer_id} checksum value is: {checksum}", "info")
+    return checksum
 
 
 def remove_existing_xml(lot_id):
@@ -197,8 +198,8 @@ def generate_xml(map: Map):
   device_el.set("SubstrateNumber", map.wafer_id)
   device_el.set("SlotNumber", map.wafer_id)
   device_el.set("Status", "")
-  device_el.set("DeviceSizeX", map.die_size_x)
-  device_el.set("DeviceSizeY", map.die_size_y)
+  device_el.set("DeviceSizeX", str(map.die_size_x))
+  device_el.set("DeviceSizeY", str(map.die_size_y))
   device_el.set("FrameId", "")
   device_el.set("NullBin", "")
   device_el.set("ProductId", map.target_device)
@@ -260,8 +261,8 @@ def export_xml(lot_id, target_device, die_size_x, die_size_y):
   Arguments:
     lot_id (str): 貨批號碼, 例如 "AADZHS000"
     target_device (str): 讀取 WO 資訊組成, 例如 "ACIPCD0K0BA111"
-    die_size_x (int): 從 SINF map 中取得
-    die_size_y (int): 從 SINF map 中取得
+    die_size_x (float): 從 SINF map 中取得
+    die_size_y (float): 從 SINF map 中取得
 
   Returns:
     - None: 如果匯出成功, 則回傳 None
@@ -305,16 +306,19 @@ def export_xml(lot_id, target_device, die_size_x, die_size_y):
       xml_content = generate_xml(map_inst)
       maps_el.append(xml_content)
 
-    #手動寫入 XML 聲明和內容
+    #取得待寫入的 XML 內容
     xml_path = get_export_path(lot_id)
+    #先將 ElementTree 轉成字串
+    raw_str = ET.tostring(maps_el, encoding="utf-8")
+    #Use minidom parsing and prettier
+    re_parsed = xml.dom.minidom.parseString(raw_str)
+    pretty_xml = re_parsed.toprettyxml(indent="  ", newl="\n")
+
+    #將 XML 內容寫入檔案
     with open(xml_path, "wb") as xml_file:
-      #寫入 XML 聲明
-      xml_file.write(b'<?xml version="1.0" ?>\n')
-      #將 XML 內容寫入檔案
-      tree = ET.ElementTree(maps_el)
-      tree.write(xml_file, encoding="unicode")
+      xml_file.write(pretty_xml.encode("utf-8"))
       write_log(f"Export to XML successfully, lot ID: {lot_id}", "success")
 
   except Exception as e:
-    write_log(f"Error exporting XML for lot {lot_id}: {e}", error)
+    write_log(f"Error exporting XML for lot {lot_id}: {e}", "error")
     return "ExportXmlError"

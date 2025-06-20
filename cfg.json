@@ -8,7 +8,7 @@
   "sftp_port": 22,
   "sftp_user": "att21070800",
   "sftp_pwd": "4Pmem0R#",
-  "sinf_target_path": "/1stDM(eMap)",
+  "sinf_target_path": "\\1stDM(eMap)",
   "wo_target_path": "\\\\10.185.30.51\\api\\B2B\\APM\\Backup",
   "upload_path": "\\\\t6qnap05-a\\PTE_share\\By_Engineering\\Esther_Yang\\Test"
 }
