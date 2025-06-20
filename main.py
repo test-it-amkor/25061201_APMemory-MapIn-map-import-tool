@@ -132,6 +132,7 @@ class MyWidget(QWidget):
     8. 如果有任何錯誤, 使用 QMessageBox 顯示警告訊息
     9. 如果成功, 印出相關資訊, 並使用 QMessageBox 顯示成功訊息
     """
+    write_log("=" * 60, "info")
     try:
       #顯示進度條
       self.progress_bar.setVisible(True)
