@@ -114,7 +114,7 @@ class MainWidget(QWidget):
       title_texts,
       "-" * 40,
       "Author: ATT Test IT",
-      "Last updated on 2025.06.23"
+      "Last updated on 2025.06.24"
     ])
     self.show_msg_box("about", info_text, True)
 
