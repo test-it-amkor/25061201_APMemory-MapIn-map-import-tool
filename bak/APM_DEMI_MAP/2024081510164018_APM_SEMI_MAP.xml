@@ -1,0 +1,47 @@
+<?xml version="1.0" ?>
+<Maps>
+
+<Map
+ xmlns="http://www.semi.org"
+ SubstrateType="Wafer"
+ SubstrateId="MTH406-03-G5"
+ FormatRevision="SEMI G85-0703">
+<Device
+ BinType="Ascii"
+ LotId="MTH406000C"
+ SubstrateNumber="03"
+ SlotNumber="03"
+ Status=""
+ DeviceSizeX="1"
+ DeviceSizeY="1"
+ FrameId=""
+ NullBin="F"
+ ProductId="1"
+ SupplierName="AMKOR"
+ Rows="10"
+ Columns="16"
+ MapType="Array"
+ OriginLocation="2"
+ Orientation="0"
+ WaferSize="300"
+ CreateDate="2024081510164018"
+ LastModified="2024081510164018">
+<ReferenceDevice ReferenceDeviceX="" ReferenceDeviceY="" RefDevicePosX="" RefDevicePosY=""/>
+<Bin BinCode="1" BinQuality="Pass" BinDescription="Normal Pass" BinCount="109"/>
+<Bin BinCode="X" BinQuality="Fail" BinDescription="Normal Fail" BinCount="11"/>
+<Bin BinCode="F" BinQuality="NULL" BinDescription="NULL" BinCount="40"/>
+<Data MapName="MTH406000C.XML" MapVersion="">
+<Row><![CDATA[FFFFFF1111FFFFFF]]></Row>
+<Row><![CDATA[FFF1X11111111FFF]]></Row>
+<Row><![CDATA[FF111111111111FF]]></Row>
+<Row><![CDATA[F11111111111111F]]></Row>
+<Row><![CDATA[XX1111X111111X11]]></Row>
+<Row><![CDATA[XX11111111111111]]></Row>
+<Row><![CDATA[X1111X111111111X]]></Row>
+<Row><![CDATA[F1111111111111XF]]></Row>
+<Row><![CDATA[FF111111111111FF]]></Row>
+<Row><![CDATA[FFFFF111111FFFFF]]></Row>
+</Data>
+</Device>
+</Map>
+</Maps>

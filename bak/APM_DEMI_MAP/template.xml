@@ -1,0 +1,38 @@
+<?xml version="1.0" ?>
+<Maps>
+
+<Map
+ xmlns="http://www.semi.org"
+ SubstrateType="Wafer"
+ SubstrateId="MBZ289-23-B7"
+ FormatRevision="SEMI G85-0703">
+<Device
+ BinType="Ascii"
+ LotId="MBZ289570W"
+ SubstrateNumber="23"
+ SlotNumber="23"
+ Status=""
+ DeviceSizeX="180"
+ DeviceSizeY="240"
+ FrameId=""
+ NullBin="F"
+ ProductId="ACIPC60K0AA111"
+ SupplierName="AMKOR"
+ Rows="10"
+ Columns="16"
+ MapType="Array"
+ OriginLocation="2"
+ Orientation="0"
+ WaferSize="300"
+ CreateDate="2024071710275518"
+ LastModified="2024071710275518">
+<ReferenceDevice ReferenceDeviceX="" ReferenceDeviceY="" RefDevicePosX="" RefDevicePosY=""/>
+<Bin BinCode="1" BinQuality="Pass" BinDescription="Normal Pass" BinCount="100"/>
+<Bin BinCode="X" BinQuality="Fail" BinDescription="Normal Fail" BinCount="20"/>
+<Bin BinCode="F" BinQuality="NULL" BinDescription="NULL" BinCount="12"/>
+<Data MapName="MBZ289570W.XML" MapVersion="">
+<Row><![CDATA[]]></Row>
+</Data>
+</Device>
+</Map>
+</Maps>

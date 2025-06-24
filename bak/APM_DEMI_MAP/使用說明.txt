@@ -1,0 +1,28 @@
+AADZHS000
+
+###更動或刪除template.xml及template_multi.xml會使程式無法執行
+
+#使用說明
+
+1. 點擊 .exe檔
+
+2. 選擇單片或多片功能
+    
+3. 輸入各欄位，依據所選功能選擇檔案或多個檔案所在之資料夾
+
+     單片: 選擇檔案
+    
+     多片: 將所有檔案放在同一資料夾，並選取此資料夾 (若資料夾內有其他不相關檔案會使程式無法執行或Error)
+
+4. 完成按下Done
+
+5. 生成結果.xml檔案在當前資料夾(檔名為檔案生成時間)
+
+6. 完成
+
+
+#Error
+
+1. template.xml 或是 template_multi.xml不在當前資料夾
+2. template.xml 或是 template_multi.xml被修改過
+3. Error會生成ParsingError.log檔案
