@@ -82,7 +82,6 @@ $ python main.py
 
 # 打包程式 (請記得先安裝 PyInstaller)
 $ pyinstaller --onefile --icon=icons/app.ico --add-data "icons;icons" main.py
-$ pyinstaller --onefile --add-data "icons;icons" main.py
 # --onefile: 產生單一 .exe 檔案
 # --icon: 指定要嵌入 .exe 的 icon, 必須要是 .ico 檔
 # --add-data: 將 icons 資料夾一併打包, 注意 Windows 用分號;, Linux/macOS 用冒號:
