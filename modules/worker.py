@@ -160,7 +160,7 @@ class Worker(QThread):
         self.message.emit("warning", self.get_error_msg(export_result, lot_id), False)
         return
       xml_path = rf"{get_export_path()}\{lot_id}.xml"
-      self.log_text.emit(f"Map XML file path: {xml_path}")
+      self.log_text.emit(f"Generated map XML file path: {xml_path}")
       self.progress.emit(85)
       ################################################################################
       #5. 將 XML 檔案上傳到 AWMS MapIN 路徑
@@ -171,8 +171,8 @@ class Worker(QThread):
         self.message.emit("warning", self.get_error_msg(upload_result, lot_id), False)
         return
       self.progress.emit(95)
-      self.log_text.emit(f"Copy map XML file to path: {get_xml_bak_path()}")
-      self.log_text.emit(f"Uploaded map XML file path: {xml_path}")
+      self.log_text.emit(f"Copied map XML file to path: {get_xml_bak_path()}")
+      self.log_text.emit(f"Uploaded map XML file path: {lot_id}.xml")
 
       ################################################################################
       #6. 顯示成功訊息
