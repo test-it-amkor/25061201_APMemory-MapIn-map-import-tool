@@ -99,7 +99,7 @@ class Worker(QThread):
 
       #如果成功下載 SINF map 檔案, sinf_result 會是其下載路徑
       if sinf_result != None and sinf_result.strip() != "":
-        self.log_text.emit(f"SINF map download folder: {sinf_result}")
+        self.log_text.emit(f"SINF map download path: {sinf_result}")
         sinf_info = get_sinf_info(sinf_result)
         #如果是字串, 代表讀取 SINF map 檔案失敗
         if isinstance(sinf_info, str):
@@ -128,7 +128,7 @@ class Worker(QThread):
         return
       #如果成功下載 WO 檔案, wo_result 會是其下載路徑
       elif wo_result and wo_result.strip() != "":
-        self.log_text.emit(f"WO file download folder: {wo_result}")
+        self.log_text.emit(f"WO file download path: {wo_result}")
         wo_info = get_wo_info(wo_result)
         #如果是字串, 代表讀取 WO file 失敗
         if isinstance(wo_info, str):
