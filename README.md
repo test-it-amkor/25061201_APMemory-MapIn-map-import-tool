@@ -1,9 +1,9 @@
-# APMemory MapIn map import tool
+# APMemory MapIN map import tool
 
 - 需求編號: 25061201 (舊單號 24071801)
 - 需求者: Yy Chen
 - 原作者: Esther Yang
-- **Last updated by Esther Yang 2025/06/20**
+- **Last updated by Esther Yang 2025/06/24**
 
 ---
 
@@ -47,7 +47,7 @@
 - app_title: 應用程式名稱
 - log_path: 本地 log 路徑
 - xml_export_dir: 本地 XML 匯出的路徑
-- dl_basic_dir: 下載資料夾路徑, 存放下載下來的 SINF map files 與 WO files
+- dl_basic_dir: 下載資料夾路徑, 存放下載複製來的 SINF map files 與 WO files
 - sftp_host: SFTP address
 - sftp_port: SFTP port number, 在此設置為 22
 - sftp_user: SFTP 使用者名稱
@@ -55,6 +55,7 @@
 - sinf_target_path: SINF map 的原路徑, 在此設置為 "\\1stDM(eMap)"
 - wo_target_path: WO file 的原路徑, 在此設置為 "\\\\10.185.30.51\\api\\B2B\\APM\\Backup"
 - wo_month_cnt: 要尋找幾個月以前 (含當前月份) 的 WO file, 在此設置為 2
+- xml_bak_path: XML map file 的備份路徑, 在此設置為 "\\\\t6qnap05-a\\PTE_share\\By_Customer\\CP_portion\\AP_Memory\\MAPIN\\G85 map"
 - upload_path: XML map file 的上傳路徑, 在此設置為 "\\\\10.185.56.37\\MapIN\\APMemory\\G85"
 
 ---

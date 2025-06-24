@@ -3,7 +3,7 @@
   "app_title": "APMemory - MapIN Map Import Tool",
   "log_path": "logs",
   "xml_export_dir": "export",
-  "dl_basic_dir": "download",
+  "dl_basic_dir": "\\\\t6qnap05-a\\PTE_share\\By_Customer\\CP_portion\\AP_Memory\\MAPIN\\source map",
   "sftp_host": "attsftp01.amkor.com.tw",
   "sftp_port": 22,
   "sftp_user": "att21070800",
@@ -11,5 +11,6 @@
   "sinf_target_path": "\\1stDM(eMap)",
   "wo_target_path": "\\\\10.185.30.51\\api\\B2B\\APM\\Backup",
   "wo_month_cnt": 2,
+  "xml_bak_path": "\\\\t6qnap05-a\\PTE_share\\By_Customer\\CP_portion\\AP_Memory\\MAPIN\\G85 map",
   "upload_path": "\\\\t6qnap05-a\\PTE_share\\By_Engineering\\Esther_Yang\\Test"
 }

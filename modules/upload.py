@@ -1,5 +1,5 @@
-import os
-from modules.cfg import get_export_path, get_upload_path
+import os, shutil
+from modules.cfg import get_export_path, get_upload_path, get_xml_bak_path
 from modules.log import write_log
 from modules.xml import remove_existing_xml
 
@@ -23,7 +23,7 @@ def upload_xml(lot_id: str) -> str | None:
     os.makedirs(upload_path, exist_ok=True)
 
     #XML 檔案的路徑
-    xml_path = get_export_path(lot_id)
+    xml_path = rf"{get_export_path()}/{lot_id}.xml"
     #檢查 XML 檔案是否存在
     if not os.path.exists(xml_path) or not os.path.isfile(xml_path):
       return "XmlNotFoundError"
@@ -33,7 +33,13 @@ def upload_xml(lot_id: str) -> str | None:
     with open(xml_path, "rb") as src, open(dst_path, "wb") as dst:
       dst.write(src.read())
 
-    #上傳完成後, 移除 XML 檔案
+    #上傳完成後, 複製一份 XML map 到備份資料夾
+    xml_bak_path = get_xml_bak_path()
+    #確保備份資料夾存在
+    os.makedirs(xml_bak_path, exist_ok=True)
+    shutil.copy(xml_path, rf"{xml_bak_path}/{lot_id}.xml")
+    write_log(f"Copy XML backup to: {xml_bak_path}", "info")
+    #移除 XML 檔案
     remove_existing_xml(lot_id)
     write_log(f"XML uploaded to: {dst_path}", "info")
     return None

@@ -1,13 +1,16 @@
 __pycache__
 *.pyc
-
 venv
 
+#PyInstaller 相關
 dist
 build
 *.spec
 *.exe
 
+#開發環境下使用, 不加入 git 追蹤
 download/*
 export/*
+backup/*
+
 logs/*

@@ -1,7 +1,7 @@
 import os
 from PyQt5.QtCore import QThread, pyqtSignal
 from modules.log import write_log
-from modules.cfg import get_export_path, get_sinf_dl_path, get_upload_path
+from modules.cfg import get_export_path, get_sinf_dl_path, get_upload_path, get_xml_bak_path
 from modules.sinf import download_sinf_map, get_sinf_info
 from modules.upload import upload_xml
 from modules.wo import download_wo_file, get_wo_info
@@ -159,9 +159,9 @@ class Worker(QThread):
       if isinstance(export_result, str):
         self.message.emit("warning", self.get_error_msg(export_result, lot_id), False)
         return
-      self.log_text.emit(f"Map XML file path: {get_export_path(lot_id)}")
+      xml_path = rf"{get_export_path()}\{lot_id}.xml"
+      self.log_text.emit(f"Map XML file path: {xml_path}")
       self.progress.emit(85)
-
       ################################################################################
       #5. 將 XML 檔案上傳到 AWMS MapIN 路徑
       upload_result = upload_xml(lot_id)
@@ -171,13 +171,14 @@ class Worker(QThread):
         self.message.emit("warning", self.get_error_msg(upload_result, lot_id), False)
         return
       self.progress.emit(95)
-      self.log_text.emit(f"Uploaded map XML file path: {rf"{get_upload_path()}\{lot_id}.xml"}")
+      self.log_text.emit(f"Copy map XML file to path: {get_xml_bak_path()}")
+      self.log_text.emit(f"Uploaded map XML file path: {xml_path}")
 
       ################################################################################
       #6. 顯示成功訊息
       self.message.emit("success", f"Success! Processed lot ID: {lot_id}", False)
       self.progress.emit(100)
-      self.log_text.emit(f"Success!")
+      self.log_text.emit(f"Success! 🎉")
       self.finished.emit()
 
     except Exception as e:

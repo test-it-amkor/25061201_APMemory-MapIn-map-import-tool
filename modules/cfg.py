@@ -85,6 +85,11 @@ def get_export_path() -> str:
   return rf"{cfg['xml_export_dir']}".strip()
 
 
+def get_xml_bak_path() -> str:
+  """取得 XML 的備份路徑"""
+  return rf"{cfg['xml_bak_path']}".strip()
+
+
 def get_upload_path() -> str:
   """取得上傳檔案的路徑 (AWMS)"""
   return rf"{cfg['upload_path']}".strip()

@@ -8,6 +8,13 @@ from PyQt5.QtWidgets import QApplication, QWidget, QSizePolicy, QVBoxLayout, QHB
 from PyQt5.QtGui import QFont, QIcon
 
 
+def get_src_path(relative_path):
+  """取得資源檔案的正確路徑"""
+  if hasattr(sys, "_MEIPASS"):
+    return os.path.join(sys._MEIPASS, relative_path)
+  return os.path.join(os.path.abspath("."), relative_path)
+
+
 class MainWidget(QWidget):
   """
   主視窗, 包含以下元件:
@@ -20,8 +27,8 @@ class MainWidget(QWidget):
   def __init__(self):
     super().__init__()
     self.setWindowTitle(get_app_title())
-    self.setMinimumSize(700, 400)
-    self.resize(700, 400)
+    self.setMinimumSize(750, 400)
+    self.resize(750, 400)
     self.ui_setup()
 
 
@@ -45,7 +52,7 @@ class MainWidget(QWidget):
     h_layout_1.addWidget(self.lot_id)
     #Execute 按鈕
     self.exec_btn = QPushButton("Execute", self)
-    self.exec_btn.setIcon(QIcon("icons/exec.png"))
+    self.exec_btn.setIcon(QIcon(get_src_path("icons/exec.png")))
     self.exec_btn.clicked.connect(self.on_execute)
     self.exec_btn.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
     h_layout_1.addWidget(self.exec_btn)
@@ -82,17 +89,17 @@ class MainWidget(QWidget):
     h_layout_4.setAlignment(Qt.AlignCenter)
     #Info 按鈕
     self.info_btn = QPushButton("Info", self)
-    self.info_btn.setIcon(QIcon("icons/info.png"))
+    self.info_btn.setIcon(QIcon(get_src_path("icons/info.png")))
     self.info_btn.clicked.connect(self.show_app_info)
     h_layout_4.addWidget(self.info_btn)
     #Open Directory 按鈕
     self.open_btn = QPushButton("Open Directory", self)
-    self.open_btn.setIcon(QIcon("icons/folder.png"))
+    self.open_btn.setIcon(QIcon(get_src_path("icons/folder.png")))
     self.open_btn.clicked.connect(self.open_curr_dir)
     h_layout_4.addWidget(self.open_btn)
     #Exit 按鈕
     self.exit_btn = QPushButton("Exit", self)
-    self.exit_btn.setIcon(QIcon("icons/exit.png"))
+    self.exit_btn.setIcon(QIcon(get_src_path("icons/exit.png")))
     self.exit_btn.clicked.connect(self.close)
     h_layout_4.addWidget(self.exit_btn)
 
@@ -121,7 +128,7 @@ class MainWidget(QWidget):
   def show_log_text(self, text: str="Default message"):
     """更新 log_text 要顯示的文字內容"""
     curr_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    self.log_text.append(f"{curr_time} {text}")
+    self.log_text.append(f"{curr_time} | {text}")
 
 
   def keyPressEvent(self, event):
@@ -226,7 +233,7 @@ if __name__ == "__main__":
   """)
 
   #為 app 設置 icon
-  app.setWindowIcon(QIcon("icons/app.png"))
+  app.setWindowIcon(QIcon(get_src_path("icons/app.png")))
 
   main = MainWidget()
   main.show()
