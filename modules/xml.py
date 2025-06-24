@@ -1,4 +1,4 @@
-import os, re
+import os, shutil, re
 import xml.etree.ElementTree as ET
 import xml.dom.minidom
 from datetime import datetime
@@ -76,18 +76,13 @@ class Map:
 
 
 def remove_existing_xml(lot_id):
-  """
-  移除已存在的 XML 檔案
+  """移除 export 資料夾"""
 
-  Arguments:
-    lot_id (str): Lot ID, 用來組裝 XML 檔案的路徑
-  """
-
-  xml_path = get_export_path(lot_id)
-  if os.path.exists(xml_path) and os.path.isfile(xml_path):
+  export_path = get_export_path()
+  if os.path.exists(export_path) and os.path.isdir(export_path):
     try:
-      os.remove(xml_path)
-      write_log(f"Removed existing XML file: {xml_path}", "info")
+      shutil.rmtree(export_path)
+      write_log(f"Removed export folder", "info")
     except Exception:
       return "RemoveExportError"
 
@@ -271,8 +266,9 @@ def export_xml(lot_id, target_device, die_size_x, die_size_y):
   """
 
   try:
-    #先檢查並移除舊有的 export/{lot_id}.xml
-    remove_existing_xml(lot_id)
+    #取得匯出資料夾路徑
+    export_path = get_export_path()
+    os.makedirs(export_path, exist_ok=True)
 
     #生成 XML 根元素 Maps
     maps_el = ET.Element("Maps")
@@ -308,7 +304,7 @@ def export_xml(lot_id, target_device, die_size_x, die_size_y):
       maps_el.append(xml_content)
 
     #取得待寫入的 XML 內容
-    xml_path = get_export_path(lot_id)
+    xml_path = rf"{export_path}/{lot_id}.xml"
     #先將 ElementTree 轉成字串
     raw_str = ET.tostring(maps_el, encoding="utf-8")
     #Use minidom parsing and prettier

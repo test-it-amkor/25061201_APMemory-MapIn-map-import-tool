@@ -47,7 +47,7 @@ class Worker(QThread):
         "SinfReadError": "Failed to read SINF map file",
         "WoReadError": "Failed to read .csv (WO file)",
         "WoNotFoundError": f"Lot ID '{custom_info}' WO file not found from B2B folder",
-        "RemoveExportError": f"Failed to remove existed export/{custom_info}.xml file",
+        "RemoveExportError": f"Failed to remove existed export folder",
         "ExportXmlError": f"Failed to export XML file for lot ID '{custom_info}'",
         "XmlNotFoundError": f"XML file for lot ID '{custom_info}' not found in export folder",
         "UploadError": f"Error uploading XML to AWMS for lot '{custom_info}'"

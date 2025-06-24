@@ -80,14 +80,9 @@ def get_wo_target_path() -> str:
   return rf"{cfg['wo_target_path']}".strip()
 
 
-def get_export_path(lot_id: str) -> str:
-  """
-  取得 XML 匯出的路徑
-
-  Arguments:
-    lot_id (str): 貨批號碼, 例如 "AADZHS000"
-  """
-  return rf"{cfg['xml_export_dir']}/{lot_id}.xml".strip()
+def get_export_path() -> str:
+  """取得 XML 匯出的路徑"""
+  return rf"{cfg['xml_export_dir']}".strip()
 
 
 def get_upload_path() -> str:
