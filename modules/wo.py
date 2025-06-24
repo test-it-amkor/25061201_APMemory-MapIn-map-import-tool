@@ -1,7 +1,7 @@
 import os, shutil
 import pandas as pd
 from datetime import datetime
-from modules.cfg import get_wo_dl_path, get_wo_target_path
+from modules.cfg import get_wo_dl_path, get_wo_month_cnt, get_wo_target_path
 from modules.log import write_log
 
 def getLatestMonths(num=2) -> list:
@@ -52,7 +52,8 @@ def download_wo_file(lot_id: str) -> str:
   """
 
   try:
-    monthStrs = getLatestMonths(2)
+    month_cnt = get_wo_month_cnt()
+    monthStrs = getLatestMonths(month_cnt)
 
     for month in monthStrs:
       #1. 組裝下載資料夾路徑

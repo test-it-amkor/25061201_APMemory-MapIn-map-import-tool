@@ -56,6 +56,14 @@ def get_sinf_dl_path(lot_id: str, folder_name: str) -> str:
   return rf"{cfg['dl_basic_dir']}\{lot_id}\{folder_name}".strip()
 
 
+def get_wo_month_cnt() -> int:
+  """
+  取得下載 WO 時要遍歷幾個月份的資料夾
+  詳細可以見 modules.wo 的 getLatestMonths() 與 download_wo_file()
+  """
+  return int(cfg["wo_month_cnt"])
+
+
 def get_wo_dl_path(lot_id: str) -> str:
   """
   取得 WO file 下載檔案的存放路徑
