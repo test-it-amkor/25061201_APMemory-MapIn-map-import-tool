@@ -59,6 +59,38 @@
 
 ---
 
+### 開發者步驟
+
+```
+# 請在命令列中輸入以下指令, 建立虛擬環境
+$ python -m venv venv
+
+# 啟用 venv (如果你的作業系統為 Windows)
+$ venv/Scripts/activate
+# 啟用 venv (如果你的作業系統為 Linux / macOS)
+$ source venv/bin/activate
+
+# 安裝依賴套件
+$ pip install -r requirements.txt
+
+# (如果你有安裝 / 解除依賴套件)
+$ pip freeze > requirements.txt
+
+# 啟用程式
+$ python main.py
+
+# 打包程式 (請記得先安裝 PyInstaller)
+$ pyinstaller --onefile --icon=icons/app.ico --add-data "icons;icons" main.py
+$ pyinstaller --onefile --add-data "icons;icons" main.py
+# --onefile: 產生單一 .exe 檔案
+# --icon: 指定要嵌入 .exe 的 icon, 必須要是 .ico 檔
+# --add-data: 將 icons 資料夾一併打包, 注意 Windows 用分號;, Linux/macOS 用冒號:
+# 有多個要一併打包的資料夾或檔案可以重複使用 --add-data
+
+```
+
+---
+
 ### 主要程式
 
 - main.py (main.exe)
