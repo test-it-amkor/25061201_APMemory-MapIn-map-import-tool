@@ -3,6 +3,7 @@ from modules.cfg import get_export_path, get_upload_path
 from modules.log import write_log
 from modules.xml import remove_existing_xml
 
+
 def upload_xml(lot_id: str) -> str | None:
   """
   上傳 XML 檔案到 AWMS 的指定路徑

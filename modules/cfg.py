@@ -13,16 +13,12 @@ cfg = load_cfg()
 
 
 def get_app_title() -> str:
-  """
-  取得 GUI 程式標題
-  """
+  """取得 GUI 程式標題"""
   return cfg["app_title"].strip()
 
 
 def get_log_path() -> str:
-  """
-  取得 log directory path
-  """
+  """取得 log directory path"""
   return rf"{cfg['log_path']}".strip()
 
 
@@ -75,16 +71,12 @@ def get_wo_dl_path(lot_id: str) -> str:
 
 
 def get_sinf_target_path() -> str:
-  """
-  取得下載 SINF map file 的遠端目標路徑
-  """
+  """取得下載 SINF map file 的遠端目標路徑"""
   return rf"{cfg['sinf_target_path']}".strip()
 
 
 def get_wo_target_path() -> str:
-  """
-  取得下載 WO file 的遠端目標路徑
-  """
+  """取得下載 WO file 的遠端目標路徑"""
   return rf"{cfg['wo_target_path']}".strip()
 
 
@@ -99,7 +91,5 @@ def get_export_path(lot_id: str) -> str:
 
 
 def get_upload_path() -> str:
-  """
-  取得上傳檔案的路徑 (AWMS)
-  """
+  """取得上傳檔案的路徑 (AWMS)"""
   return rf"{cfg['upload_path']}".strip()

@@ -3,7 +3,7 @@ from datetime import datetime
 from modules.cfg import get_log_path
 
 
-#配置日誌
+#日誌配置內容
 log_dir = get_log_path()
 os.makedirs(log_dir, exist_ok=True)
 curr_date = datetime.now().strftime("%Y%m%d")
@@ -17,6 +17,7 @@ logging.basicConfig(
 )
 
 def write_log(msg: str, status="info"):
+  """二次包裝 logging.info()"""
   title = "Information"
   match status:
     case "success":

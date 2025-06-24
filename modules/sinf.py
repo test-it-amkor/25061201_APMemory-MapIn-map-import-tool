@@ -4,6 +4,7 @@ from stat import S_ISREG
 from modules.cfg import get_sftp_cfg, get_sinf_dl_path, get_sinf_target_path
 from modules.log import write_log
 
+
 class SftpConnection:
   def __init__(self, host: str, port: int, user: str, pwd: str):
     self.host = host
@@ -12,6 +13,7 @@ class SftpConnection:
     self.pwd = pwd
     self.sftp = None
     self.transport = None
+
 
   def connect(self):
     """建立 SFTP 連線"""
@@ -24,6 +26,7 @@ class SftpConnection:
       write_log(f"Failed to connect to SFTP server: {e}", "error")
       return "ConnectionError"
 
+
   def close(self):
     """關閉 SFTP 連線"""
     if self.sftp:
@@ -31,9 +34,11 @@ class SftpConnection:
     if self.transport:
       self.transport.close()
 
+
   def listdir_attr(self, path):
     """
     取得遠端資料夾下的檔案列表
+    此為二次包裝 paramiko.SFTPClient.listdir_attr()
 
     Arguments:
       path (str): 遠端資料夾路徑
@@ -46,12 +51,17 @@ class SftpConnection:
     else:
       raise Exception("SFTP connection not established")
 
+
   def get(self, remote_path, local_path):
-    """下載遠端檔案到本地"""
+    """
+    下載遠端檔案到本地
+    此為二次包裝 paramiko.SFTPClient.get()
+    """
     if self.sftp:
       self.sftp.get(remote_path, local_path)
     else:
       raise Exception("SFTP connection not established")
+
 
 def download_sinf_map(lot_id: str) -> str:
   """

@@ -5,6 +5,7 @@ from datetime import datetime
 from modules.cfg import get_export_path, get_sinf_dl_path
 from modules.log import write_log
 
+
 class Map:
   """
   用來存放 Map 的資訊, 等待匯入進 XML 檔案內容中
@@ -300,7 +301,7 @@ def export_xml(lot_id, target_device, die_size_x, die_size_y):
 
       #創建 Map 實例, 將 SINF map 資訊存進此實例中
       map_inst = Map(target_device, die_size_x, die_size_y, row_data_result,
-                    wafer_id, row_ct, col_ct, lot, cnt_f, cnt_1, cnt_x)
+                      wafer_id, row_ct, col_ct, lot, cnt_f, cnt_1, cnt_x)
 
       #生成 XML 內容
       xml_content = generate_xml(map_inst)

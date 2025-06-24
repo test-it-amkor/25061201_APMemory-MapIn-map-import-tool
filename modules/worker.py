@@ -184,4 +184,3 @@ class Worker(QThread):
       self.message.emit("error", self.get_error_msg(e), False)
       self.progress.emit(0)
       self.finished.emit()
-

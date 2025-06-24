@@ -4,6 +4,7 @@ from datetime import datetime
 from modules.cfg import get_wo_dl_path, get_wo_month_cnt, get_wo_target_path
 from modules.log import write_log
 
+
 def getLatestMonths(num=2) -> list:
   """
   取得最近 num 個月的月份字串列表
@@ -120,9 +121,9 @@ def get_wo_info(wo_path: str) -> dict | str:
     write_log(f"Read CSV file {wo_path} failed: {e}", "error")
     return "WoReadError"
 
-  #取得 OUTPUT P/N、MASK、SUFFIX 欄位的值
+  #取得 OUTPUT P/N, MASK, SUFFIX 欄位的值
   try:
-    #只取第一行資料
+    #只取第一行資料 (實際上也只會有一行)
     row = df.iloc[0]
 
     try:

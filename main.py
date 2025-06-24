@@ -11,9 +11,10 @@ from PyQt5.QtGui import QFont, QIcon
 class MainWidget(QWidget):
   """
   主視窗, 包含以下元件:
-    - Lot ID 單行輸入框
-    - Execute 按鈕
-    - Exit 按鈕
+    - Lot ID 標籤, 單行輸入框, Execute 按鈕
+    - 進度條
+    - Log 資訊
+    - Info 按鈕, Open Directory 按鈕, Exit 按鈕
   """
 
   def __init__(self):
@@ -176,8 +177,8 @@ class MainWidget(QWidget):
     Arguments:
       num (int): 進度值, 0-100
     """
-    self.prog_bar.setValue(num) #設置進度值
-    QApplication.processEvents()    #更新 UI
+    self.prog_bar.setValue(num)   #設置進度值
+    QApplication.processEvents()  #更新 UI
 
 
   def on_finished(self):
@@ -197,7 +198,7 @@ class MainWidget(QWidget):
       return
 
     # self.prog_bar.setVisible(True)  #在此手動設定是否隱藏進度條
-    self.set_progress(0)                #重置進度條進度為 0
+    self.set_progress(0)              #重置進度條進度為 0
     self.exec_btn.setEnabled(False)
     self.exit_btn.setEnabled(False)
 
@@ -212,15 +213,17 @@ class MainWidget(QWidget):
 if __name__ == "__main__":
   #建立 QApplication instance
   app = QApplication(sys.argv)
+
+  #全域設定字型為 微軟正黑體, 12pt
+  app.setFont(QFont("Microsoft JhengHei", 10))
+
+  #全域設定按鈕樣式
   app.setStyleSheet("""
     QPushButton {
       padding: 4px 8px;
       min-width: 60px;
     }
   """)
-
-  #全域設定字型為 微軟正黑體, 12pt
-  app.setFont(QFont("Microsoft JhengHei", 10))
 
   #為 app 設置 icon
   app.setWindowIcon(QIcon("icons/app.png"))
