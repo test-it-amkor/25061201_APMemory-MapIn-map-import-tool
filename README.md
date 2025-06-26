@@ -22,7 +22,7 @@
 
 1. 開啟主程式 (main.py / main.exe)
 2. 輸入要處理的 Lot ID, 例如: AADZHS000, MWD053000
-3. 點擊 "Execute" 按鈕
+3. 點擊 "Execute" 按鈕, 或者按 "Enter" 按鍵
 4. 此程式會進行以下動作:
 
 - 從 SFTP 下載 SINF map 檔案, 檔案名稱格式為 {lot_id}.{wafer_id}, 例如: MWD053000.01
@@ -53,11 +53,11 @@
 - sftp_port: SFTP port number, 在此設置為 22
 - sftp_user: SFTP 使用者名稱
 - sftp_pwd: SFTP 使用者密碼
-- sinf_target_path: SINF map 的原路徑, 在此設置為 "\\1stDM(eMap)"
-- wo_target_path: WO file 的原路徑, 在此設置為 "\\\\10.185.30.51\\api\\B2B\\APM\\Backup"
+- sinf_target_path: SINF map 的原路徑, 在此應設置為 "\\1stDM(eMap)"
+- wo_target_path: WO file 的原路徑, 在此應設置為 "\\\\10.185.30.51\\api\\B2B\\APM\\Backup"
 - wo_month_cnt: 要尋找幾個月以前 (含當前月份) 的 WO file, 在此設置為 2
-- xml_bak_path: XML map file 的備份路徑, 在此設置為 "\\\\t6qnap05-a\\PTE_share\\By_Customer\\CP_portion\\AP_Memory\\MAPIN\\G85 map"
-- upload_path: XML map file 的上傳路徑, 在此設置為 "\\\\10.185.56.37\\MapIN\\APMemory\\G85"
+- xml_bak_path: XML map file 的備份路徑, 在此應設置為 "\\\\t6qnap05-a\\PTE_share\\By_Customer\\CP_portion\\AP_Memory\\MAPIN\\G85 map"
+- upload_path: XML map file 的上傳路徑, 在此應設置為 "\\\\10.185.56.37\\MapIN\\APMemory\\G85"
 
 ---
 
@@ -82,11 +82,12 @@ $ pip freeze > requirements.txt
 $ python main.py
 
 # 打包程式 (請記得先安裝 PyInstaller)
-$ pyinstaller --onefile --icon=icons/app.ico --add-data "icons;icons" main.py
+$ .\venv\Scripts\pyinstaller --onefile --icon=icons/app.ico --add-data "icons;icons" main.py
 # --onefile: 產生單一 .exe 檔案
 # --icon: 指定要嵌入 .exe 的 icon, 必須要是 .ico 檔
 # --add-data: 將 icons 資料夾一併打包, 注意 Windows 用分號;, Linux/macOS 用冒號:
 # 有多個要一併打包的資料夾或檔案可以重複使用 --add-data
+# 如果你不希望執行 .exe 時出現命令列, 請加上 --noconsole (或 -w)
 
 ```
 
