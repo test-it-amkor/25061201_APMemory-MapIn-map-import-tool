@@ -129,7 +129,7 @@ class Worker(QThread):
       #如果成功下載 WO 檔案, wo_result 會是其下載路徑
       elif wo_result and wo_result.strip() != "":
         self.log_text.emit(f"WO file download path: {wo_result}")
-        wo_info = get_wo_info(wo_result)
+        wo_info = get_wo_info(wo_result, lot_id)
         #如果是字串, 代表讀取 WO file 失敗
         if isinstance(wo_info, str):
           self.message.emit("warning", self.get_error_msg(wo_info), False)

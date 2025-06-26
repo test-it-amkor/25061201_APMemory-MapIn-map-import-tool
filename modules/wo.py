@@ -101,12 +101,13 @@ def download_wo_file(lot_id: str) -> str:
     write_log(f"Download WO failed: {e}", "error")
 
 
-def get_wo_info(wo_path: str) -> dict | str:
+def get_wo_info(wo_path: str, lot_id: str) -> dict | str:
   """
   讀取 WO file, 組成 Target Device 字串內容, 回傳 targetDevice 與 quantity 值
 
   Arguments:
     wo_path (str): 下載後的 WO 檔案路徑
+    lot_id (str): 貨批號碼, 例如 "AADZHS000"
 
   Returns:
     dict: 成功讀取 WO 檔案, 回傳一個字典, 包含以下內容:
@@ -123,8 +124,16 @@ def get_wo_info(wo_path: str) -> dict | str:
 
   #取得 OUTPUT P/N, MASK, SUFFIX 欄位的值
   try:
-    #只取第一行資料 (實際上也只會有一行)
-    row = df.iloc[0]
+    try:
+      #依 LOT NO 欄位找到對應的 row
+      match_rows = df[df["LOT NO"].astype(str).str.strip() == lot_id]
+      if match_rows.empty:
+        ve = ValueError(f"LOT NO {lot_id} not found in file")
+        write_log(ve, "error")
+        raise ve
+      row = match_rows.iloc[0]
+    except Exception:
+      raise ValueError(ve)
 
     try:
       output_p_n = str(row.get("OUTPUT P/N", "")).strip()
