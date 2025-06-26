@@ -8,6 +8,9 @@ from PyQt5.QtWidgets import QApplication, QWidget, QSizePolicy, QVBoxLayout, QHB
 from PyQt5.QtGui import QFont, QIcon
 
 
+last_updated_date = "2025.06.26"
+
+
 def get_src_path(relative_path):
   """取得資源檔案的正確路徑"""
   if hasattr(sys, "_MEIPASS"):
@@ -114,7 +117,7 @@ class MainWidget(QWidget):
       title_texts,
       "-" * 40,
       "Author: ATT Test IT",
-      "Last updated on 2025.06.24"
+      f"Last updated on {last_updated_date}"
     ])
     self.show_msg_box("about", info_text, True)
 
