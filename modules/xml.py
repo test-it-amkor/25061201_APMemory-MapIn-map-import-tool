@@ -1,6 +1,6 @@
 import os, shutil, re
 import xml.etree.ElementTree as ET
-import xml.dom.minidom
+from lxml import etree
 from datetime import datetime
 from modules.cfg import get_export_path, get_sinf_dl_path
 from modules.log import write_log
@@ -36,16 +36,18 @@ class Map:
     self.cnt_f = str(cnt_f)
     self.cnt_1 = str(cnt_1)
     self.cnt_x = str(cnt_x)
-    #此實例的 lot_no 與其他 lot_id 意義不同, 故命名為 let_no 作為區別
-    self.lot_no = self.get_lot_no()
     self.substrate_id = self.get_substrate_id()
     self.curr_time = datetime.now().strftime("%Y%m%d%H%M%S%f")[:-4]
 
-  def get_lot_no(self):
-    """取得 lot_no"""
-    #將 wafer_id 轉換為字母, 例如 wafer_id 為 "01" 則轉換為 "A", "02" 則轉換為 "B"
-    wafer_letter = chr(ord("A") + int(self.wafer_id) - 1)
-    return f"{self.lot}{wafer_letter}"
+  def set_lot_no(self, wafer_letter: str):
+    """
+    設置 lot_no
+    p.s. 此實例的 lot_no 與其他 lot_id 意義不同, 故命名為 let_no 作為區別
+
+    Arguments:
+      - wafer_letter (str): 最小刻度轉換而得的英文字母
+    """
+    self.lot_no = f"{self.lot}{wafer_letter}"
 
   def get_substrate_id(self):
     """取得 substrate_id"""
@@ -75,7 +77,7 @@ class Map:
     return checksum
 
 
-def remove_existing_xml(lot_id):
+def rm_export_folder():
   """移除 export 資料夾"""
 
   export_path = get_export_path()
@@ -181,14 +183,14 @@ def generate_xml(map: Map):
   """
 
   #Map 元素
-  map_el = ET.Element("Map")
+  map_el = etree.Element("Map")
   map_el.set("xmlns", "http://www.semi.org")
   map_el.set("SubstrateType", "Wafer")
   map_el.set("SubstrateId", map.substrate_id)
   map_el.set("FormatRevision", "SEMI G85-0703")
 
   #Device 元素
-  device_el = ET.SubElement(map_el, "Device")
+  device_el = etree.SubElement(map_el, "Device")
   device_el.set("BinType", "Ascii")
   device_el.set("LotId", map.lot_no)
   device_el.set("SubstrateNumber", map.wafer_id)
@@ -210,43 +212,43 @@ def generate_xml(map: Map):
   device_el.set("LastModified", map.curr_time)
 
   #ReferenceDevice 元素
-  ref_device_el = ET.SubElement(device_el, "ReferenceDevice")
+  ref_device_el = etree.SubElement(device_el, "ReferenceDevice")
   ref_device_el.set("ReferenceDeviceX", "1")
   ref_device_el.set("ReferenceDeviceY", "1")
   ref_device_el.set("RefDevicePosX", "")
   ref_device_el.set("RefDevicePosY", "")
 
   #Bin 1 元素
-  bin_el_1 = ET.SubElement(device_el, "Bin")
+  bin_el_1 = etree.SubElement(device_el, "Bin")
   bin_el_1.set("BinCode", "1")
   bin_el_1.set("BinQuality", "Pass")
   bin_el_1.set("BinDescription", "Normal Pass")
   bin_el_1.set("BinCount", map.cnt_1)
 
   #Bin X 元素
-  bin_el_x = ET.SubElement(device_el, "Bin")
+  bin_el_x = etree.SubElement(device_el, "Bin")
   bin_el_x.set("BinCode", "X")
   bin_el_x.set("BinQuality", "Fail")
   bin_el_x.set("BinDescription", "Normal Fail")
   bin_el_x.set("BinCount", map.cnt_x)
 
   #Bin F 元素
-  bin_el_x = ET.SubElement(device_el, "Bin")
+  bin_el_x = etree.SubElement(device_el, "Bin")
   bin_el_x.set("BinCode", "F")
   bin_el_x.set("BinQuality", "NULL")
   bin_el_x.set("BinDescription", "NULL")
   bin_el_x.set("BinCount", map.cnt_f)
 
   #Data 元素
-  data_el = ET.SubElement(device_el, "Data")
+  data_el = etree.SubElement(device_el, "Data")
   data_el.set("MapName", f"{map.lot_no}.XML")
   data_el.set("MapVersion", "")
 
   #Row 元素
-  for idx, row_data in enumerate(reversed(map.row_infos)):
-    row_el = ET.SubElement(data_el, "Row")
-    row_el.text = f"<![CDATA[{row_data}]]>"
-
+  for row_data in map.row_infos:
+    row_el = etree.SubElement(data_el, "Row")
+    modified_data = row_data.replace("]]>", "]]]]><![CDATA[>")
+    row_el.text = etree.CDATA(modified_data)
   return map_el
 
 
@@ -261,8 +263,8 @@ def export_xml(lot_id, target_device, die_size_x, die_size_y):
     die_size_y (float): 從 SINF map 中取得
 
   Returns:
-    - None: 如果匯出成功, 則回傳 None
-    - str: 如果失敗則回傳 error key, 例如 "ExportXmlError"
+    - str: 如果匯出成功, 則回傳匯出的 XML file path
+    - str: 如果失敗則回傳 error key, 例如 "SinfReadError", "ExportXmlError"
   """
 
   try:
@@ -271,10 +273,17 @@ def export_xml(lot_id, target_device, die_size_x, die_size_y):
     os.makedirs(export_path, exist_ok=True)
 
     #生成 XML 根元素 Maps
-    maps_el = ET.Element("Maps")
+    maps_el = etree.Element("Maps")
 
     #遍歷 SINF map 的下載資料夾
     dl_path = get_sinf_dl_path(lot_id, f"APC_{lot_id}")
+
+    #取得最小刻號, 規則為取每批第一片 wafer id, 再轉換為英文字母
+    #例如: #2~#25, 取 #2 轉為英文字母 "B"
+    wafer_ids = [int(file.split(".")[-1]) for file in os.listdir(dl_path)]
+    wafer_ids.sort()
+    min_id = wafer_ids[0]
+    wafer_letter = chr(ord("A") + int(min_id) - 1)
 
     for file in os.listdir(dl_path):
       #取得單片 SINF map 檔案資訊
@@ -298,23 +307,22 @@ def export_xml(lot_id, target_device, die_size_x, die_size_y):
       #創建 Map 實例, 將 SINF map 資訊存進此實例中
       map_inst = Map(target_device, die_size_x, die_size_y, row_data_result,
                       wafer_id, row_ct, col_ct, lot, cnt_f, cnt_1, cnt_x)
+      map_inst.set_lot_no(wafer_letter)
 
       #生成 XML 內容
       xml_content = generate_xml(map_inst)
       maps_el.append(xml_content)
 
     #取得待寫入的 XML 內容
-    xml_path = rf"{export_path}/{lot_id}.xml"
-    #先將 ElementTree 轉成字串
-    raw_str = ET.tostring(maps_el, encoding="utf-8")
-    #Use minidom parsing and prettier
-    re_parsed = xml.dom.minidom.parseString(raw_str)
-    pretty_xml = re_parsed.toprettyxml(indent="  ", newl="\n")
-
+    xml_path = rf"{export_path}/{map_inst.lot_no}.xml"
+    #產生 XML 並保留 CDATA
+    xml_bytes = etree.tostring(maps_el, encoding="utf-8", pretty_print=True, xml_declaration=False)
     #將 XML 內容寫入檔案
     with open(xml_path, "wb") as xml_file:
-      xml_file.write(pretty_xml.encode("utf-8"))
+      xml_file.write(b'<?xml version="1.0" ?>\n')
+      xml_file.write(xml_bytes)
       write_log(f"Export to XML successfully, lot ID: {lot_id}", "success")
+      return xml_path
 
   except Exception as e:
     write_log(f"Error exporting XML for lot {lot_id}: {e}", "error")

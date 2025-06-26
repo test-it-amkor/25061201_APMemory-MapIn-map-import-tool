@@ -156,15 +156,16 @@ class Worker(QThread):
       ################################################################################
       #4. 如果數量一致, 開始輸出 XML 檔案
       export_result = export_xml(lot_id, target_device, die_size_x, die_size_y)
-      if isinstance(export_result, str):
+      if export_result == "SinfReadError" or export_result == "ExportXmlError":
         self.message.emit("warning", self.get_error_msg(export_result, lot_id), False)
         return
-      xml_path = rf"{get_export_path()}\{lot_id}.xml"
-      self.log_text.emit(f"Generated map XML file path: {xml_path}")
-      self.progress.emit(85)
+      else:
+        xml_path = export_result
+        self.log_text.emit(f"Generated map XML file path: {xml_path}")
+        self.progress.emit(85)
       ################################################################################
       #5. 將 XML 檔案上傳到 AWMS MapIN 路徑
-      upload_result = upload_xml(lot_id)
+      upload_result = upload_xml(xml_path)
 
       #如果找不到匯出的 XML 檔案, 或者上傳至 AWMS 時發生錯誤
       if upload_result == "XmlNotFoundError" or upload_result == "UploadError":
