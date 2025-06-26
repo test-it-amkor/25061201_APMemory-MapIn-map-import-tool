@@ -313,7 +313,7 @@ def export_xml(lot_id, target_device, die_size_x, die_size_y):
       maps_el.append(xml_content)
 
     #取得待寫入的 XML 內容
-    xml_path = rf"{export_path}/{map_inst.lot_no}.xml"
+    xml_path = rf"{export_path}\{map_inst.lot_no}.xml"
     #產生 XML 並保留 CDATA
     xml_bytes = etree.tostring(maps_el, encoding="utf-8", pretty_print=True, xml_declaration=False)
     #將 XML 內容寫入檔案
