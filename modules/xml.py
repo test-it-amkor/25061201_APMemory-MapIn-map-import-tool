@@ -1,5 +1,4 @@
 import os, shutil, re
-import xml.etree.ElementTree as ET
 from lxml import etree
 from datetime import datetime
 from modules.cfg import get_export_path, get_sinf_dl_path
