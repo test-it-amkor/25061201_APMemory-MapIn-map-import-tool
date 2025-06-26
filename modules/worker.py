@@ -173,7 +173,7 @@ class Worker(QThread):
         return
       self.progress.emit(95)
       self.log_text.emit(f"Copied map XML file to path: {get_xml_bak_path()}")
-      self.log_text.emit(f"Uploaded map XML file path: {lot_id}.xml")
+      self.log_text.emit(f"Uploaded map XML file path: {upload_result}")
 
       ################################################################################
       #6. 顯示成功訊息

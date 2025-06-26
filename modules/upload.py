@@ -12,7 +12,7 @@ def upload_xml(xml_path: str) -> str | None:
     xml_path (str): XML 檔案匯出的路徑
 
   Returns:
-    None: 如果上傳成功, 則回傳 None
+    None: 如果上傳成功, 則回傳上傳後的 XML 完整路徑
     str: 如果失敗則回傳 error key, 例如 "XmlNotFoundError", "UploadError" 等
   """
 
@@ -42,7 +42,7 @@ def upload_xml(xml_path: str) -> str | None:
     #移除 XML 匯出資料夾
     rm_export_folder()
     write_log(f"XML uploaded to: {dst_path}", "info")
-    return None
+    return dst_path
 
   except Exception as e:
     write_log(f"Error uploading XML file {xml_filename}: {e}", "error")
