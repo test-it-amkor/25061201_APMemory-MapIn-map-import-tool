@@ -198,7 +198,7 @@ def generate_xml(map: Map):
   device_el.set("DeviceSizeX", str(map.die_size_x))
   device_el.set("DeviceSizeY", str(map.die_size_y))
   device_el.set("FrameId", "")
-  device_el.set("NullBin", "")
+  device_el.set("NullBin", "F")
   device_el.set("ProductId", map.target_device)
   device_el.set("SupplierName", "AMKOR")
   device_el.set("Rows", map.row_ct)
