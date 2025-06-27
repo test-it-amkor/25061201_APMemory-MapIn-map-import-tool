@@ -3,7 +3,7 @@
 - 需求編號: 25061201 (舊單號 24071801)
 - 需求者: Yy Chen
 - 原作者: Esther Yang
-- **Last updated by Esther Yang 2025/06/26**
+- **Last updated by Esther Yang 2025/06/27**
 
 ---
 
@@ -57,7 +57,7 @@
 - wo_target_path: WO file 的原路徑, 在此應設置為 "\\\\10.185.30.51\\api\\B2B\\APM\\Backup"
 - wo_month_cnt: 要尋找幾個月以前 (含當前月份) 的 WO file, 在此設置為 2
 - xml_bak_path: XML map file 的備份路徑, 在此應設置為 "\\\\t6qnap05-a\\PTE_share\\By_Customer\\CP_portion\\AP_Memory\\MAPIN\\G85 map"
-- upload_path: XML map file 的上傳路徑, 在此應設置為 "\\\\10.185.56.37\\MapIN\\APMemory\\G85"
+- upload_path: XML map file 的上傳路徑, 在此應設置為 "\\\\10.185.56.37\\awms\\Process\\MapIN\\APMemory\\G85"
 
 ---
 

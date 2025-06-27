@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import QApplication, QWidget, QSizePolicy, QVBoxLayout, QHB
 from PyQt5.QtGui import QFont, QIcon
 
 
-last_updated_date = "2025.06.26"
+last_updated_date = "2025/06/27"
 
 
 def get_src_path(relative_path):

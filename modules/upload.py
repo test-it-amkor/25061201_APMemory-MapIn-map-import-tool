@@ -20,13 +20,16 @@ def upload_xml(xml_path: str) -> str | None:
     #取得 AWMS 上傳路徑
     upload_path = get_upload_path()
     #確保目標上傳資料夾存在
-    os.makedirs(upload_path, exist_ok=True)
+    try:
+      os.makedirs(upload_path, exist_ok=True)
+    except Exception as e:
+      raise e
 
-    #XML 檔案的路徑
-    xml_filename = os.path.basename(xml_path)
     #檢查 XML 檔案是否存在
     if not os.path.exists(xml_path) or not os.path.isfile(xml_path):
       return "XmlNotFoundError"
+    #XML 檔案的路徑
+    xml_filename = os.path.basename(xml_path)
 
     #複製 XML 檔案到上傳資料夾路徑
     dst_path = os.path.join(upload_path, rf"{xml_filename}")
