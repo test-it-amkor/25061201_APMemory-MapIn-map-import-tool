@@ -209,6 +209,7 @@ class MainWidget(QWidget):
 
     # self.prog_bar.setVisible(True)  #在此手動設定是否隱藏進度條
     self.set_progress(0)              #重置進度條進度為 0
+    self.log_text.clear()             #清空 log_text 的內容
     self.exec_btn.setEnabled(False)
     self.exit_btn.setEnabled(False)
 
