@@ -28,6 +28,8 @@ def write_log(msg: str, status="info"):
       title = "Error"
     case "about":
       title = "About"
+    case "debug":
+      title = "Debug"
     case _:
       title = "Information"
 

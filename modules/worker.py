@@ -5,7 +5,7 @@ from modules.cfg import get_export_path, get_sinf_dl_path, get_upload_path, get_
 from modules.sinf import download_sinf_map, get_sinf_info
 from modules.upload import upload_xml
 from modules.wo import download_wo_file, get_wo_info
-from modules.xml import export_xml
+from modules.xml import compare_row_cnt, export_xml, prepare_export
 
 
 class Worker(QThread):
@@ -38,6 +38,9 @@ class Worker(QThread):
         return f"SINF map file count {custom_info['sinf']} does not match WO QUANTITY value {custom_info['wo']}"
       else:
         return f"SINF map file count does not match WO QUANTITY value"
+    elif key == "RowDataMismatchError":
+      if isinstance(custom_info, dict):
+        f"Row data wafer ID {custom_info['waferId']} mismatched, '{custom_info['symBef']}' count is: {custom_info['cntBef']}, and '{custom_info['symAft']}' count is {custom_info['cntAft']}"
     else:
       error_messages = {
         "ConnectionError": "Failed to connect to SFTP server",
@@ -48,6 +51,7 @@ class Worker(QThread):
         "WoReadError": "Failed to read .csv (WO file)",
         "WoNotFoundError": f"Lot ID '{custom_info}' WO file not found from B2B folder",
         "RemoveExportError": f"Failed to remove existed export folder",
+        "CompareRowDataError": f"Failed to compare row data for lot ID '{custom_info}'",
         "ExportXmlError": f"Failed to export XML file for lot ID '{custom_info}'",
         "XmlNotFoundError": f"XML file for lot ID '{custom_info}' not found in export folder",
         "UploadError": f"Error uploading XML to AWMS for lot '{custom_info}'"
@@ -82,7 +86,7 @@ class Worker(QThread):
       ################################################################################
       #1. 下載 SINF map 檔案, 取得 die_size_x 與 die_size_y
       sinf_result = download_sinf_map(lot_id)
-      self.progress.emit(35)
+      self.progress.emit(23)
 
       #如果在 SFTP server 沒有找到 lot_id 所對應的 SINF map 檔案
       if sinf_result == "SinfNotFoundError":
@@ -112,7 +116,7 @@ class Worker(QThread):
           die_size_msg = f"Die Size X: {die_size_x}, Die Size Y: {die_size_y}"
           self.log_text.emit(die_size_msg)
           write_log(die_size_msg)
-          self.progress.emit(45)
+          self.progress.emit(37)
 
       ################################################################################
       #2. 下載工單 (WO file), 取得 target_device 與 quantity
@@ -141,7 +145,7 @@ class Worker(QThread):
           wo_info_msg = f"Target device: {target_device}, Quantity: {quantity}"
           self.log_text.emit(wo_info_msg)
           write_log(wo_info_msg)
-          self.progress.emit(65)
+          self.progress.emit(52)
 
       ################################################################################
       #3. 比對 SINF map 的檔案數量與 WO 所記錄的 quantity 是否一致
@@ -151,32 +155,82 @@ class Worker(QThread):
         self.message.emit("warning", self.get_error_msg("NumberMismatchError", {"sinf": sinf_file_cnt, "wo": quantity}), False)
         return
       self.log_text.emit(f"SINF map file count: {sinf_file_cnt}, WO QUANTITY: {quantity}")
-      self.progress.emit(70)
+      self.progress.emit(65)
 
       ################################################################################
-      #4. 如果數量一致, 開始輸出 XML 檔案
-      export_result = export_xml(lot_id, target_device, die_size_x, die_size_y)
-      if export_result == "SinfReadError" or export_result == "ExportXmlError":
+      #4. 如果數量一致, 開始生成 XML 元素
+      prepare_result = prepare_export(lot_id, target_device, die_size_x, die_size_y)
+      if isinstance(prepare_result, str):
+        self.message.emit("warning", self.get_error_msg(prepare_result, lot_id), False)
+        return
+      if isinstance(prepare_result, dict):
+        maps_el = prepare_result["mapsEl"]
+        lot_no = prepare_result["lotNo"]
+        row_data_bef = prepare_result["rowDataBef"]
+        row_data_aft = prepare_result["rowDataAft"]
+      self.progress.emit(75)
+
+      ################################################################################
+      #5. 比對轉置前後的 row data 數量
+      compare_result = compare_row_cnt(row_data_bef, row_data_aft)
+      if isinstance(compare_result, str):
+        self.message.emit("warning", self.get_error_msg(compare_result, lot_id), False)
+        return
+      if isinstance(compare_result, dict):
+        total_bef_f = compare_result["totalBefF"]
+        total_aft_f = compare_result["totalAftF"]
+        total_bef_1 = compare_result["totalBef1"]
+        total_aft_1 = compare_result["totalAft1"]
+        total_bef_x = compare_result["totalBefX"]
+        total_aft_x = compare_result["totalAftX"]
+        compare_logs = [
+          f"Comparing row data:",
+          f"'__' count is: {total_bef_f}, 'F' count is {total_aft_f};",
+          f"'00' count is: {total_bef_1}, '1' count is {total_aft_1};",
+        ]
+        sym_bef_X = compare_result['symBefX']
+        if total_bef_x != 0 or total_aft_x != 0:
+          compare_logs.append(f"'{sym_bef_X}' count is: {total_bef_x}, 'X' count is {total_aft_x};")
+          self.log_text.emit(" ".join(compare_logs))
+
+        err_infos = None
+        if len(compare_result["mismatchedIdF"]):
+          err_infos = { "waferId": compare_result["mismatchedIdF"], "cntBef": total_bef_f, "cntAft": total_aft_f, "symBef": "__", "symAft": "F" }
+        elif len(compare_result["mismatchedId1"]):
+          err_infos = { "waferId": compare_result["mismatchedId1"], "cntBef": total_bef_1, "cntAft": total_aft_1, "symBef": "00", "symAft": "1" }
+        elif len(compare_result["mismatchedIdX"]):
+          err_infos = { "waferId": compare_result["mismatchedIdX"], "cntBef": total_bef_x, "cntAft": total_aft_x, "symBef": sym_bef_X, "symAft": "X" }
+        if isinstance(err_infos, dict) and err_infos:
+          self.message.emit("warning", self.get_error_msg("RowDataMismatchError", err_infos), False)
+          return
+        self.log_text.emit(f"Compare row data successfully")
+        self.progress.emit(85)
+
+      ################################################################################
+      #6. 開始輸出 XML 檔案
+      export_result = export_xml(lot_id, maps_el, lot_no)
+      if export_result == "ExportXmlError":
         self.message.emit("warning", self.get_error_msg(export_result, lot_id), False)
         return
       else:
         xml_path = export_result
         self.log_text.emit(f"Generated map XML file path: {xml_path}")
-        self.progress.emit(85)
+        self.progress.emit(93)
+
       ################################################################################
-      #5. 將 XML 檔案上傳到 AWMS MapIN 路徑
+      #7. 將 XML 檔案上傳到 AWMS MapIN 路徑
       upload_result = upload_xml(xml_path)
 
       #如果找不到匯出的 XML 檔案, 或者上傳至 AWMS 時發生錯誤
       if upload_result == "XmlNotFoundError" or upload_result == "UploadError":
         self.message.emit("warning", self.get_error_msg(upload_result, lot_id), False)
         return
-      self.progress.emit(95)
+      self.progress.emit(98)
       self.log_text.emit(f"Copied map XML file to path: {get_xml_bak_path()}")
       self.log_text.emit(f"Uploaded map XML file path: {upload_result}")
 
       ################################################################################
-      #6. 顯示成功訊息
+      #8. 顯示成功訊息
       self.message.emit("success", f"Success! Processed lot ID: {lot_id}", False)
       self.progress.emit(100)
       self.log_text.emit(f"Success! 🎉")

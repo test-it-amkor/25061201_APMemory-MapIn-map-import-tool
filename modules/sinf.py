@@ -121,7 +121,7 @@ def download_sinf_map(lot_id: str) -> str:
           local_file = os.path.join(dl_path, file_attr.filename)
           sftp.get(remote_file, local_file)
           downloaded_files.append(file_attr.filename)
-          write_log(f"Downloaded SINF file: {file_attr.filename}", "info")
+          write_log(f"Downloaded SINF file: {file_attr.filename}", "debug")
 
       #檢查下載的檔案數量是否與 SFTP 上的檔案數量一致
       if len(downloaded_files) == len(valid_attrs):

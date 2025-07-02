@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import QApplication, QWidget, QSizePolicy, QVBoxLayout, QHB
 from PyQt5.QtGui import QFont, QIcon
 
 
-last_updated_date = "2025/06/27"
+last_updated_date = "2025/07/02"
 
 
 def get_src_path(relative_path):
@@ -30,8 +30,8 @@ class MainWidget(QWidget):
   def __init__(self):
     super().__init__()
     self.setWindowTitle(get_app_title())
-    self.setMinimumSize(750, 400)
-    self.resize(750, 400)
+    self.setMinimumSize(800, 450)
+    self.resize(800, 450)
     self.ui_setup()
 
 
@@ -154,7 +154,7 @@ class MainWidget(QWidget):
         - "error": 錯誤通知, 使用 QMessageBox.critical()
         - "about": 關於應用程式的資訊, 例如 版本資訊, 作者資訊, 使用 QMessageBox.about()
       msg (str): 消息框文字內容
-      skip_log (bool): 是否要略過將 log 文字內容記錄進 log 中? 預設為 False, 也就是啟用記錄功能
+      skip_log (bool): 是否要略過將 log 文字內容記錄進 log 中? 預設為 False, 也就是會啟用記錄功能
     """
     box_title = "Information"
     match status:

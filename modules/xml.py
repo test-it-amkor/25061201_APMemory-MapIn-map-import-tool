@@ -1,4 +1,4 @@
-import os, shutil, re
+import os, shutil
 from lxml import etree
 from datetime import datetime
 from modules.cfg import get_export_path, get_sinf_dl_path
@@ -72,7 +72,7 @@ class Map:
     check_char_1 = chr(ord("A") + next_higher_three_bits)
     check_char_2 = chr(ord("0") + least_significant_three_bits)
     checksum = check_char_1 + check_char_2
-    write_log(f"Wafer ID {self.wafer_id} checksum value is: {checksum}", "info")
+    write_log(f"Wafer ID {self.wafer_id} checksum value is: {checksum}", "debug")
     return checksum
 
 
@@ -135,12 +135,13 @@ def get_info_from_sinf(dl_path, lot_id, number) -> dict | str:
     return "SinfReadError"
 
 
-def handle_row_data(row_data_list: list) -> dict:
+def handle_row_data(row_data_list: list, wafer_id: str) -> dict:
   """
   處理 RowData 的內容, 轉置為客製格式
 
   Arguments:
     row_data_list (list): RowData 的內容
+    wafer_id (str): Wafer 編號, 僅打印用
 
   Returns:
     dict: 包含處理後的結果
@@ -154,20 +155,117 @@ def handle_row_data(row_data_list: list) -> dict:
   cnt_f = 0
   cnt_1 = 0
   cnt_x = 0
-  for row_data in row_data_list:
-    row_data = row_data.strip().replace("__", "F").replace("00", "1").replace("DF","X")
-    row_data = re.sub(r"[^F1 ]", "X", row_data)
-    row_data = row_data.replace("XX", "X").replace(" ", "")
-    result.append(row_data)
-    cnt_f += row_data.count("F")
-    cnt_1 += row_data.count("1")
-    cnt_x += row_data.count("X")
+
+  write_log(f"Start transfer wafer ID {wafer_id} data...", "debug")
+
+  for y, row_data in enumerate(row_data_list):
+    items = row_data.strip().split()
+    new_row = ""
+    for x, item in enumerate(items):
+      # print(f"SINF data ({x}, {y}): {item}")  #for debugging
+      new_item = "X"
+      match item:
+        #如果是 Null die ("__"), 轉置為 Fail
+        case "__":
+          new_item = "F"
+          cnt_f += 1
+        #如果是 "00", 轉置為 Pass
+        case "00":
+          new_item = "1"
+          cnt_1 += 1
+        #其他
+        case _:
+          new_item = "X"
+          cnt_x += 1
+      # print(f"New data ({x}, {y}): {new_item}")  #for debugging
+      new_row += new_item
+    result.append(new_row)
+    write_log(f"Comparing row data #{y}, original data from SINF file: {row_data}, new data: {new_row}", "debug")
+
   return {
     "rowDataResult": result,
     "cntF": cnt_f,
     "cnt1": cnt_1,
     "cntX": cnt_x
   }
+
+
+def compare_row_cnt(before: dict, after: dict) -> dict | str:
+  """
+  比對每一片 wafer 轉置前後的 Null, Pass (tested), Untested 數量
+  其中代表意義為:
+  - Null: 那個座標是空的, 沒得測; 轉置前為 "__", 轉置後應該為 "F"
+  - Pass (tested): 已測過; 轉置前為 "00", 轉置後應該為 "1"
+  - Untested: 不該被測的, 要被 skip 的; 轉置前為 "__" 或 "00" 以外的內容, 例如 "OT" 或 "DF", 轉置後應該為 "X"
+
+  Arguments:
+    before (dict): 轉置前 (擷取自 SINF map 時) 的 row data, key 為 wafer ID, value 為 row data 內容
+    after (dict): 表示轉置後 (準備要匯入 XML 時) 的 row data, key 為 wafer ID, value 為 row data 內容
+
+  Returns:
+    - dict: 為比對結果的字典, 包含以下內容:
+      1. mismatchedIdF (list), mismatchedId1 (list), mismatchedIdX (list): F, 1, X 前後數量不匹配的 wafer ID
+      2. totalBefF (int), totalBef1 (int), totalBefX (int): 轉置前的 F, 1, X 總數量 (整批)
+      3. totalAftF (int), totalAft1 (int), totalAftX (int): 轉置後的 F, 1, X 總數量 (整批)
+      4. symBefX: X 轉置前的符號 (整批); p.s. F 固定為 "__", 1 固定為 "00", 在此無須列出
+    - str: 如果失敗則回傳 error key, 例如 "CompareRowDataError"
+  """
+
+  try:
+    #先檢查前後 row data 數量是否一致
+    if len(before.items()) != len(after.items()):
+      raise ValueError("Row data count from SINF is not equal to row data count from transferred XML map")
+
+    #遍歷 row data 內容, 檢查 F, 1, X 數量是否前後一致
+    total_bef_f = 0
+    total_aft_f = 0
+    total_bef_1 = 0
+    total_aft_1 = 0
+    total_bef_x = 0
+    total_aft_x = 0
+    mismatched_ids_f = []
+    mismatched_ids_1 = []
+    mismatched_ids_x = []
+    for wafer_id, row_data_list in before.items():
+      cnt_bef_f = 0
+      cnt_aft_f = 0
+      cnt_bef_1 = 0
+      cnt_aft_1 = 0
+      cnt_bef_x = 0
+      cnt_aft_x = 0
+      sym_bef_x = []
+      for idx, row_data in enumerate(row_data_list):
+        cnt_bef_f += row_data.count("__")
+        cnt_aft_f += after[wafer_id][idx].count("F")
+        cnt_bef_1 += row_data.count("00")
+        cnt_aft_1 += after[wafer_id][idx].count("1")
+        items_bef_x = [item for item in row_data.strip().split() if item not in ("__", "00")]
+        cnt_bef_x += len(items_bef_x)
+        cnt_aft_x += after[wafer_id][idx].count("X")
+        sym_bef_x += items_bef_x
+
+      total_bef_f += cnt_bef_f
+      total_aft_f += cnt_aft_f
+      total_bef_1 += cnt_bef_1
+      total_aft_1 += cnt_aft_1
+      total_bef_x += cnt_bef_x
+      total_aft_x += cnt_aft_x
+      sym_bef_x = ", ".join(sorted(set(sym_bef_x), key=sym_bef_x.index))
+      if not cnt_bef_f == cnt_aft_f:
+        mismatched_ids_f.append(wafer_id)
+      if not cnt_bef_1 == cnt_aft_1:
+        mismatched_ids_1.append(wafer_id)
+      if not cnt_bef_x == cnt_aft_x:
+        mismatched_ids_x.append(wafer_id)
+    result= {
+      "mismatchedIdF": mismatched_ids_f, "totalBefF": total_bef_f, "totalAftF": total_aft_f,
+      "mismatchedId1": mismatched_ids_1, "totalBef1": total_bef_1, "totalAft1": total_aft_1,
+      "mismatchedIdX": mismatched_ids_x, "totalBefX": total_bef_x, "totalAftX": total_aft_x, "symBefX": sym_bef_x
+    }
+    return result
+  except Exception as e:
+    write_log(f"Error occurred comparing row data: {e}", "error")
+    return "CompareRowDataError"
 
 
 def generate_xml(map: Map):
@@ -251,9 +349,9 @@ def generate_xml(map: Map):
   return map_el
 
 
-def export_xml(lot_id, target_device, die_size_x, die_size_y):
+def prepare_export(lot_id, target_device, die_size_x, die_size_y) -> dict | str:
   """
-  匯出 XML 檔案到 export 資料夾
+  匯出前的材料準備
 
   Arguments:
     lot_id (str): 貨批號碼, 例如 "AADZHS000"
@@ -262,15 +360,15 @@ def export_xml(lot_id, target_device, die_size_x, die_size_y):
     die_size_y (float): 從 SINF map 中取得
 
   Returns:
-    - str: 如果匯出成功, 則回傳匯出的 XML file path
-    - str: 如果失敗則回傳 error key, 例如 "SinfReadError", "ExportXmlError"
+    - dict: 如果匯出成功, 則回傳包含以下內容的字典:
+      - mapsEl (etree.Element): 包含 Maps 的 XML element
+      - lotNo (str): f"{lot_id}{wafer_letter}"
+      - rowDataBef (dict): 資料轉置前的 row data, key 為 wafer ID, value 為 row data 值
+      - rowDataAft (dict): 資料轉置後的 row data, key 為 wafer ID, value 為 row data 值
+    - str: 如果失敗則回傳 error key, 例如 "SinfReadError" 或 "ExportXmlError"
   """
 
   try:
-    #取得匯出資料夾路徑
-    export_path = get_export_path()
-    os.makedirs(export_path, exist_ok=True)
-
     #生成 XML 根元素 Maps
     maps_el = etree.Element("Maps")
 
@@ -284,6 +382,8 @@ def export_xml(lot_id, target_device, die_size_x, die_size_y):
     min_id = wafer_ids[0]
     wafer_letter = chr(ord("A") + int(min_id) - 1)
 
+    row_data_bef = {}
+    row_data_aft = {}
     for file in os.listdir(dl_path):
       #取得單片 SINF map 檔案資訊
       number = file.split(".")[-1]  #取得副檔名作為 number
@@ -297,7 +397,7 @@ def export_xml(lot_id, target_device, die_size_x, die_size_y):
       col_ct = sinf_info["colCt"]
 
       #客製化處理 RowData 內容
-      processed_row_data = handle_row_data(row_data_list)
+      processed_row_data = handle_row_data(row_data_list, wafer_id)
       row_data_result = processed_row_data["rowDataResult"]
       cnt_f = processed_row_data["cntF"]
       cnt_1 = processed_row_data["cnt1"]
@@ -312,8 +412,40 @@ def export_xml(lot_id, target_device, die_size_x, die_size_y):
       xml_content = generate_xml(map_inst)
       maps_el.append(xml_content)
 
+      #轉置前的 row data 內容
+      row_data_bef[wafer_id] = row_data_list
+      #轉置後的 row data 內容
+      row_data_aft[wafer_id] = row_data_result
+
+    lot_no = map_inst.lot_no
+    return { "mapsEl": maps_el, "lotNo": lot_no, "rowDataBef": row_data_bef, "rowDataAft": row_data_aft}
+
+  except Exception as e:
+    write_log(f"Error occurred preparing source data for lot {lot_id}: {e}", "error")
+    return "ExportXmlError"
+
+
+def export_xml(lot_id, maps_el, lot_no) -> str:
+  """
+  匯出 XML 檔案到 export 資料夾
+
+  Arguments:
+    lot_id (str): 貨批號碼, 例如 "AADZHS000"
+    maps_el (etree.Element): 包含 Maps 的 XML element
+    lot_no (str): f"{lot_id}{wafer_letter}"
+
+  Returns:
+    - str: 如果匯出成功, 則回傳匯出的 XML file path
+    - str: 如果失敗則回傳 error key, 例如 "ExportXmlError"
+  """
+
+  try:
+    #取得匯出資料夾路徑
+    export_path = get_export_path()
+    os.makedirs(export_path, exist_ok=True)
+
     #取得待寫入的 XML 內容
-    xml_path = rf"{export_path}\{map_inst.lot_no}.xml"
+    xml_path = rf"{export_path}\{lot_no}.xml"
     #產生 XML 並保留 CDATA
     xml_bytes = etree.tostring(maps_el, encoding="utf-8", pretty_print=True, xml_declaration=False)
     #將 XML 內容寫入檔案
