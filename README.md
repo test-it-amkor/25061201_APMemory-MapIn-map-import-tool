@@ -30,6 +30,7 @@
 - 從 SINF map 中取得 die size X 與 die size Y
 - 從 WO file 中取得 target device 與 quantity
 - 比對 SINF map 檔案數量與 WO file 紀錄的 quantity 是否一致
+- 比對轉置前後 "\_\_" (對應 "F"), "00" (對應 "1"), 其他 (對應 "X") 的數量是否一致
 - 將 map 輸出成 XML 格式, 檔案名稱為 {LotId}.xml (此處的 LotId 對應 XML 中的 LotId 欄位值)
 - 將 XML map 檔案上傳到 AWMS MapIN 路徑
 
